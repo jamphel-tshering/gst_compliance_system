@@ -1,0 +1,95 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Welcome, {{ user.get_full_name }}!</h2>
+        <p class="text-muted">Role: {{ user.get_role_display }}</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Taxpayers</h5>
+                <h2 class="card-text text-primary">{{ total_taxpayers }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Total Returns</h5>
+                <h2 class="card-text text-success">{{ total_returns }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">High Risk Taxpayers</h5>
+                <h2 class="card-text text-danger">{{ high_risk_taxpayers }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="/admin/taxpayers/taxpayermaster/" class="btn btn-outline-primary btn-block">Manage Taxpayers</a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/admin/returns/gstreturn/" class="btn btn-outline-success btn-block">File Returns</a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/admin/refunds/refundregister/" class="btn btn-outline-warning btn-block">Refund Applications</a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/admin/risk_assessment/complianceriskregister/" class="btn btn-outline-danger btn-block">Risk Assessment</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Available Modules</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-2">
+                        <a href="/admin/taxpayers/taxpayermaster/" class="btn btn-primary btn-block">Taxpayer Master</a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/returns/gstreturn/" class="btn btn-success btn-block">GST Returns</a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/returns/notfile/" class="btn btn-secondary btn-block">Not Filed</a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/refunds/refundregister/" class="btn btn-warning btn-block">Refund Register</a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/risk_assessment/complianceriskregister/" class="btn btn-danger btn-block">Risk Register</a>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="/admin/risk_assessment/auditregister/" class="btn btn-info btn-block">Audit Register</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
