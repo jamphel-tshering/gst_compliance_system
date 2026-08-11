@@ -25,13 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-l^7sq$q+-+5+s&8tjy1p8ng=drd76jrld1g-iims30uo^6-zzv')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-
-# Render.com specific
-if 'RENDER' in os.environ:
-    ALLOWED_HOSTS.append('.onrender.com')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -47,19 +43,34 @@ INSTALLED_APPS = [
     # Third-party apps
     'crispy_forms',
     'import_export',
+    'rest_framework',
+    'corsheaders',
+    'django_filters',
     
-    # Local apps
-    'core',
-    'taxpayers',
-    'returns',
-    'refunds',
-    'risk_assessment',
-    'reporting',
+    # Local apps - explicit ordering
+    'core',              # Authentication (Core section)
+    'taxpayers',         # Taxpayer section
+    'returns',           # Return Section
+    'compliance',        # Compliance monitoring
+    'risk_assessment',   # Risk assessment
+    'refunds',           # Refund
+    'reporting',         # Reporting
 ]
+
+# Custom admin site configuration for app ordering
+from django.contrib.admin import AdminSite
+
+class GSTComplianceAdminSite(AdminSite):
+    site_header = 'GST Compliance System'
+    site_title = 'GST Compliance'
+    index_title = 'Dashboard'
+
+admin_site = GSTComplianceAdminSite(name='gst_admin')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add Whitenoise for static files
+    'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -113,6 +124,37 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',  # Temporarily allow unauthenticated access
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+}
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3002",
+    "http://127.0.0.1:3002",
+    "http://localhost:3003",
+    "http://127.0.0.1:3003",
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -137,10 +179,17 @@ TIME_ZONE = 'Asia/Thimphu'  # Bhutan time zone
 USE_I18N = True
 USE_TZ = True
 
+# Date formats - dd-mm-yyyy
+DATE_FORMAT = 'd-m-Y'
+DATETIME_FORMAT = 'd-m-Y H:i:s'
+SHORT_DATE_FORMAT = 'd-m-Y'
+SHORT_DATETIME_FORMAT = 'd-m-Y H:i:s'
+
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Whitenoise configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

@@ -7,64 +7,63 @@ class GSTReturn(models.Model):
     GST Return Model - Exact field specifications
     """
     FREQUENCY_CHOICES = (
-        ('monthly', 'Monthly'),
-        ('quarterly', 'Quarterly'),
-        ('annual', 'Annual'),
+        ('Monthly', 'Monthly'),
+        ('Quarterly', 'Quarterly'),
+        ('Annual', 'Annual'),
     )
     
     ORGANISATION_TYPES = (
-        ('sole_proprietorship', 'Sole Proprietorship'),
-        ('private_company', 'Private Company'),
-        ('public_company', 'Public Company'),
-        ('partnership', 'Partnership'),
-        ('llp', 'Limited Liability Partnership'),
-        ('trust', 'Trust'),
-        ('government', 'Government Entity'),
-        ('other', 'Other'),
+        ('Sole Proprietorship', 'Sole Proprietorship'),
+        ('Private Company', 'Private Company'),
+        ('Public Company', 'Public Company'),
+        ('Partnership', 'Partnership'),
+        ('State Owned Company', 'State Owned Company'),
+        ('Joint Venture', 'Joint Venture'),
+        ('Foreign Company', 'Foreign Company'),
+    )
+    
+    DZONGKHAG_CHOICES = (
+        ('Mongar', 'Mongar'),
+        ('Trashigang', 'Trashigang'),
+        ('Trashiyangtse', 'Trashiyangtse'),
+        ('Lhuentse', 'Lhuentse'),
     )
     
     FILING_STATUS_CHOICES = (
-        ('filed', 'Filed'),
-        ('Filed', 'Filed'),
-        ('not_filed', 'Not Filed'),
-        ('Not Filed', 'Not Filed'),
-        ('extension', 'Extention'),
-        ('Extention', 'Extention'),
+        ('Filed On Time', 'Filed On Time'),
+        ('Late Filer', 'Late Filer'),
+        ('Due', 'Due'),
+        ('Overdue / Non-Filer', 'Overdue / Non-Filer'),
         ('Extension', 'Extension'),
-        ('due', 'Due'),
-        ('over_due', 'Over Due'),
     )
     
     PAYMENT_STATUS_CHOICES = (
-        ('paid', 'Paid'),
         ('Paid', 'Paid'),
-        ('not_paid', 'Not paid'),
         ('Not paid', 'Not paid'),
-        ('credit', 'Credit'),
-        ('zero_return', 'Zero Return'),
-        ('reconciled', 'Reconciled Output Input'),
+        ('Credit', 'Credit'),
+        ('Zero Return', 'Zero Return'),
+        ('Reconciled Output Input', 'Reconciled Output Input'),
     )
     
     COMPLIANCE_STATUS_CHOICES = (
-        ('compliant', 'Compliant'),
         ('Compliant', 'Compliant'),
-        ('late_filer', 'Late Filer'),
-        ('late_payment', 'Late payment'),
-        ('non_filer', 'Non-Filer'),
-        ('return_amended', 'Return Amended'),
-        ('under_review', 'Under Review'),
+        ('Late Filer', 'Late Filer'),
+        ('Non-Filer', 'Non-Filer'),
+        ('Pending', 'Pending'),
+        ('Inactive Taxpayer', 'Inactive Taxpayer'),
+        ('Unknown Taxpayer', 'Unknown Taxpayer'),
     )
     
     # Period Information
     tax_period = models.CharField(max_length=20, verbose_name='Tax Period (e.g., Jan-2026)')
     return_due_date = models.DateField(null=True, blank=True, verbose_name='Return Due Date')
     return_filing_date = models.DateField(null=True, blank=True, verbose_name='Return Filing Date')
-    filing_delay_days = models.IntegerField(default=0, verbose_name='Filing Delay (Days)')
+    filing_delay_days = models.IntegerField(default=0, null=True, blank=True, verbose_name='Filing Delay (Days)')
     
     # Taxpayer Information
     gstin = models.CharField(max_length=15, verbose_name='GSTIN')
     taxpayer_name = models.CharField(max_length=200, null=True, blank=True, verbose_name='Taxpayer Name')
-    dzongkhag = models.CharField(max_length=100, null=True, blank=True, verbose_name='Dzongkhag')
+    dzongkhag = models.CharField(max_length=100, choices=DZONGKHAG_CHOICES, null=True, blank=True, verbose_name='Dzongkhag')
     organisation_type = models.CharField(max_length=30, choices=ORGANISATION_TYPES, null=True, blank=True, verbose_name='Organisation Type')
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, null=True, blank=True, verbose_name='Frequency')
     
@@ -89,8 +88,8 @@ class GSTReturn(models.Model):
     
     # Status Information
     filing_status = models.CharField(max_length=20, choices=FILING_STATUS_CHOICES, null=True, blank=True, verbose_name='Filing Status')
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, null=True, blank=True, verbose_name='Payment Status')
-    compliance_status = models.CharField(max_length=20, choices=COMPLIANCE_STATUS_CHOICES, null=True, blank=True, verbose_name='Compliance Status')
+    payment_status = models.CharField(max_length=30, choices=PAYMENT_STATUS_CHOICES, null=True, blank=True, verbose_name='Payment Status')
+    compliance_status = models.CharField(max_length=30, choices=COMPLIANCE_STATUS_CHOICES, null=True, blank=True, verbose_name='Compliance Status')
     
     # Additional Information
     remarks = models.TextField(blank=True, null=True, verbose_name='Remarks')
@@ -116,6 +115,108 @@ class GSTReturn(models.Model):
     def __str__(self):
         return f"{self.taxpayer_name} - {self.tax_period}"
     
+    def save(self, *args, **kwargs):
+        """Override save to auto-calculate certain fields"""
+        from decimal import Decimal
+        from datetime import datetime, date, timedelta
+        
+        # Auto-calculate return_due_date from tax_period if not set
+        if self.tax_period and not self.return_due_date:
+            try:
+                from datetime import datetime, date, timedelta
+                import calendar
+                
+                tax_date = datetime.strptime(str(self.tax_period), '%Y-%m-%d').date()
+                # Due date = End of tax period + 30 days
+                # For monthly, end of month is last day of the month
+                if self.frequency == 'Monthly':
+                    # Get last day of the month
+                    last_day = calendar.monthrange(tax_date.year, tax_date.month)[1]
+                    end_of_month = date(tax_date.year, tax_date.month, last_day)
+                elif self.frequency == 'Quarterly':
+                    # For quarterly, end is 3 months from start
+                    end_date = tax_date + timedelta(days=90)
+                    last_day = calendar.monthrange(end_date.year, end_date.month)[1]
+                    end_of_month = date(end_date.year, end_date.month, last_day)
+                else:
+                    end_of_month = tax_date
+                
+                self.return_due_date = end_of_month + timedelta(days=30)
+            except:
+                pass
+        
+        # Auto-calculate declared_import_gst
+        if self.declared_import_value:
+            import_value = Decimal(str(self.declared_import_value)) if not isinstance(self.declared_import_value, Decimal) else self.declared_import_value
+            self.declared_import_gst = round(import_value * Decimal('0.05'), 2)
+        
+        # Auto-calculate domestic_purchase_itc_claimed
+        if self.declared_domestic_purchase:
+            domestic_purchase = Decimal(str(self.declared_domestic_purchase)) if not isinstance(self.declared_domestic_purchase, Decimal) else self.declared_domestic_purchase
+            self.domestic_purchase_itc_claimed = round(domestic_purchase * Decimal('0.05'), 2)
+        
+        # Auto-calculate declared_output_gst
+        if self.declared_sales:
+            sales = Decimal(str(self.declared_sales)) if not isinstance(self.declared_sales, Decimal) else self.declared_sales
+            self.declared_output_gst = round(sales * Decimal('0.05'), 2)
+        
+        # Auto-calculate filing_delay_days
+        if self.return_due_date and self.return_filing_date:
+            due_date = self.return_due_date
+            filing_date = self.return_filing_date
+            # Ensure both are date objects (not datetime)
+            if hasattr(due_date, 'date'):
+                due_date = due_date.date()
+            if hasattr(filing_date, 'date'):
+                filing_date = filing_date.date()
+            delay = (filing_date - due_date).days
+            self.filing_delay_days = max(0, delay)
+        
+        # Auto-calculate filing_status
+        if self.return_due_date:
+            today = date.today()
+            # Ensure return_due_date is a date object
+            due_date = self.return_due_date
+            if hasattr(due_date, 'date'):
+                due_date = due_date.date()
+            
+            if not self.return_filing_date:
+                # No filing date
+                if today <= due_date:
+                    self.filing_status = 'Due'
+                else:
+                    self.filing_status = 'Overdue / Non-Filer'
+            else:
+                # Has filing date - ensure it's a date object
+                filing_date = self.return_filing_date
+                if hasattr(filing_date, 'date'):
+                    filing_date = filing_date.date()
+                
+                if filing_date <= due_date:
+                    self.filing_status = 'Filed On Time'
+                else:
+                    self.filing_status = 'Late Filer'
+        
+        # Auto-calculate compliance_status based on Taxpayer Master and filing status
+        try:
+            taxpayer = TaxpayerMaster.objects.get(gstin=self.gstin)
+            if taxpayer.status != 'Active':
+                self.compliance_status = 'Inactive Taxpayer'
+            elif self.filing_status == 'Overdue / Non-Filer':
+                self.compliance_status = 'Non-Filer'
+            elif self.filing_status == 'Late Filer':
+                self.compliance_status = 'Late Filer'
+            elif self.filing_status == 'Filed On Time':
+                self.compliance_status = 'Compliant'
+            elif self.filing_status == 'Due':
+                self.compliance_status = 'Pending'
+            else:
+                self.compliance_status = 'Compliant'
+        except TaxpayerMaster.DoesNotExist:
+            self.compliance_status = 'Unknown Taxpayer'
+        
+        super().save(*args, **kwargs)
+    
     @property
     def is_credit_position(self):
         return self.gst_payable_refundable < 0
@@ -138,40 +239,71 @@ class NotFile(models.Model):
     Not File Model - For taxpayers who haven't filed returns
     """
     ORGANISATION_TYPES = (
-        ('sole_proprietorship', 'Sole Proprietorship'),
-        ('private_company', 'Private Company'),
-        ('public_company', 'Public Company'),
-        ('partnership', 'Partnership'),
-        ('llp', 'Limited Liability Partnership'),
-        ('trust', 'Trust'),
-        ('government', 'Government Entity'),
-        ('other', 'Other'),
+        ('', '---------'),
+        ('Sole Proprietorship', 'Sole Proprietorship'),
+        ('Private Company', 'Private Company'),
+        ('Public Company', 'Public Company'),
+        ('Partnership', 'Partnership'),
+        ('State Owned Company', 'State Owned Company'),
+        ('Joint Venture', 'Joint Venture'),
+        ('Foreign Company', 'Foreign Company'),
+    )
+    
+    DZONGKHAG_CHOICES = (
+        ('', '---------'),
+        ('Mongar', 'Mongar'),
+        ('Trashigang', 'Trashigang'),
+        ('Trashiyangtse', 'Trashiyangtse'),
+        ('Lhuentse', 'Lhuentse'),
     )
     
     FILING_STATUS_CHOICES = (
-        ('not_filed', 'Not Filed'),
-        ('filed_late', 'Filed Late'),
-        ('pending', 'Pending'),
+        ('', '---------'),
+        ('Filed On Time', 'Filed On Time'),
+        ('Late Filer', 'Late Filer'),
+        ('Due', 'Due'),
+        ('Overdue / Non-Filer', 'Overdue / Non-Filer'),
+        ('Extension', 'Extension'),
     )
     
     PAYMENT_STATUS_CHOICES = (
-        ('paid', 'Paid'),
-        ('credit', 'Credit'),
-        ('pending', 'Pending'),
-        ('partial', 'Partial Payment'),
+        ('', '---------'),
+        ('Paid', 'Paid'),
+        ('Credit', 'Credit'),
+        ('Pending', 'Pending'),
+        ('Partial Payment', 'Partial Payment'),
+    )
+    
+    FILING_STATUS_CHOICES = (
+        ('Filed On Time', 'Filed On Time'),
+        ('Late Filer', 'Late Filer'),
+        ('Due', 'Due'),
+        ('Overdue / Non-Filer', 'Overdue / Non-Filer'),
+        ('Extension', 'Extension'),
+    )
+    
+    COMPLIANCE_STATUS_CHOICES = (
+        ('Compliant', 'Compliant'),
+        ('Late Filer', 'Late Filer'),
+        ('Non-Filer', 'Non-Filer'),
+        ('Pending', 'Pending'),
+        ('Inactive Taxpayer', 'Inactive Taxpayer'),
+        ('Unknown Taxpayer', 'Unknown Taxpayer'),
     )
     
     # Taxpayer Information
     gstin = models.CharField(max_length=15, verbose_name='GSTIN')
     taxpayer_name = models.CharField(max_length=200, verbose_name='Taxpayer Name')
     organisation_type = models.CharField(max_length=30, choices=ORGANISATION_TYPES, verbose_name='Organisation Type')
+    dzongkhag = models.CharField(max_length=100, choices=DZONGKHAG_CHOICES, null=True, blank=True, verbose_name='Dzongkhag')
     
     # Return Period
     return_period = models.CharField(max_length=20, verbose_name='Return Period')
     
     # Status Information
-    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending', verbose_name='Payment Status')
-    filing_status = models.CharField(max_length=20, choices=FILING_STATUS_CHOICES, default='not_filed', verbose_name='Filing Status')
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='Pending', verbose_name='Payment Status')
+    filing_status = models.CharField(max_length=20, choices=FILING_STATUS_CHOICES, default='Overdue / Non-Filer', verbose_name='Filing Status')
+    compliance_status = models.CharField(max_length=30, choices=COMPLIANCE_STATUS_CHOICES, null=True, blank=True, verbose_name='Compliance Status')
     
     # System Fields
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_notfiles')
@@ -186,8 +318,30 @@ class NotFile(models.Model):
             models.Index(fields=['gstin', 'return_period']),
             models.Index(fields=['return_period']),
             models.Index(fields=['filing_status']),
+            models.Index(fields=['compliance_status']),
         ]
         unique_together = ['gstin', 'return_period']
     
     def __str__(self):
         return f"{self.taxpayer_name} - {self.return_period} ({self.filing_status})"
+    
+    def save(self, *args, **kwargs):
+        """Override save to auto-calculate compliance status"""
+        try:
+            taxpayer = TaxpayerMaster.objects.get(gstin=self.gstin)
+            if taxpayer.status != 'Active':
+                self.compliance_status = 'Inactive Taxpayer'
+            elif self.filing_status == 'Overdue / Non-Filer':
+                self.compliance_status = 'Non-Filer'
+            elif self.filing_status == 'Late Filer':
+                self.compliance_status = 'Late Filer'
+            elif self.filing_status == 'Filed On Time':
+                self.compliance_status = 'Compliant'
+            elif self.filing_status == 'Due':
+                self.compliance_status = 'Pending'
+            else:
+                self.compliance_status = 'Compliant'
+        except TaxpayerMaster.DoesNotExist:
+            self.compliance_status = 'Unknown Taxpayer'
+        
+        super().save(*args, **kwargs)

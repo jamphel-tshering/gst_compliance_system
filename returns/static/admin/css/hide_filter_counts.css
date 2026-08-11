@@ -1,0 +1,4 @@
+/* Hide Django default filter counts */
+.changelist-filter li a::after {
+    display: none !important;
+}

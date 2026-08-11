@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import ReportTemplate, GeneratedReport, ReportSchedule, DashboardWidget, AnalyticsData
 
+
 @admin.register(ReportTemplate)
 class ReportTemplateAdmin(admin.ModelAdmin):
     list_display = ['name', 'report_type', 'is_active', 'is_public', 'created_at']

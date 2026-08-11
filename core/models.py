@@ -6,14 +6,15 @@ class User(AbstractUser):
     Extended User model for GST Compliance System
     """
     USER_ROLES = (
-        ('admin', 'Administrator'),
-        ('auditor', 'Auditor'),
-        ('viewer', 'Viewer'),
-        ('data_entry', 'Data Entry Operator'),
+        ('administrator', 'Administrator'),
+        ('section_head', 'Section Head'),
+        ('audit_refund', 'Audit and Refund'),
+        ('registration_enquiry', 'Registration Taxpayer Enquiry'),
+        ('compliance', 'Compliance'),
     )
     
     email = models.EmailField(unique=True)  # Make email unique
-    role = models.CharField(max_length=20, choices=USER_ROLES, default='viewer')
+    role = models.CharField(max_length=50, choices=USER_ROLES, default='compliance')
     phone = models.CharField(max_length=20, blank=True)
     department = models.CharField(max_length=100, blank=True)
     employee_id = models.CharField(max_length=20, unique=True, blank=True)
@@ -36,17 +37,44 @@ class User(AbstractUser):
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".strip() or self.username
     
+    def is_administrator(self):
+        return self.role == 'administrator'
+    
     def is_admin(self):
-        return self.role == 'admin'
+        """Backward compatibility method"""
+        return self.is_administrator()
     
-    def is_auditor(self):
-        return self.role in ['admin', 'auditor']
+    def is_section_head(self):
+        return self.role == 'section_head'
     
-    def can_edit_data(self):
-        return self.role in ['admin', 'data_entry']
+    def is_audit_refund(self):
+        return self.role == 'audit_refund'
+    
+    def is_registration_enquiry(self):
+        return self.role == 'registration_enquiry'
+    
+    def is_compliance(self):
+        return self.role == 'compliance'
+    
+    def can_edit_taxpayers(self):
+        """Can edit taxpayer data"""
+        return self.role in ['administrator', 'registration_enquiry', 'compliance']
+    
+    def can_edit_returns(self):
+        """Can edit GST returns"""
+        return self.role in ['administrator', 'compliance']
+    
+    def can_edit_refunds(self):
+        """Can edit refund data"""
+        return self.role in ['administrator', 'audit_refund']
     
     def can_view_all(self):
-        return self.role in ['admin', 'auditor', 'viewer']
+        """Can view all data"""
+        return self.role in ['administrator', 'section_head', 'audit_refund']
+    
+    def can_manage_users(self):
+        """Can manage users"""
+        return self.role in ['administrator', 'section_head']
 
 
 class AuditLog(models.Model):
@@ -83,17 +111,33 @@ class AuditLog(models.Model):
 
 class SystemSettings(models.Model):
     """
-    System-wide configuration settings
+    System-wide configuration settings - simplified with specific fields
     """
-    key = models.CharField(max_length=100, unique=True)
-    value = models.TextField()
-    description = models.TextField(blank=True)
+    # General Settings
+    system_name = models.CharField(max_length=200, default='GST Compliance System', verbose_name='System Name')
+    organization_name = models.CharField(max_length=200, default='Revenue and Customs Division', verbose_name='Organization Name')
+    
+    # Contact Information
+    contact_email = models.EmailField(default='info@gst.gov.bt', verbose_name='Contact Email')
+    contact_phone = models.CharField(max_length=20, default='+975-2-322525', verbose_name='Contact Phone')
+    contact_address = models.TextField(default='Thimphu, Bhutan', verbose_name='Contact Address')
+    
+    # Notification Settings
+    send_email_notifications = models.BooleanField(default=True, verbose_name='Send Email Notifications')
+    email_smtp_server = models.CharField(max_length=200, blank=True, verbose_name='SMTP Server')
+    email_smtp_port = models.IntegerField(default=587, blank=True, null=True, verbose_name='SMTP Port')
+    
+    # Report Settings
+    report_logo_url = models.URLField(blank=True, verbose_name='Report Logo URL')
+    report_footer_text = models.CharField(max_length=500, default='GST Compliance Report', verbose_name='Report Footer Text')
+    
+    # System Information
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Last Updated By')
     
     class Meta:
         verbose_name = 'System Setting'
         verbose_name_plural = 'System Settings'
     
     def __str__(self):
-        return f"{self.key}: {self.value}"
+        return f"{self.system_name} - {self.organization_name}"

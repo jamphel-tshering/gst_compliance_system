@@ -1,5 +1,17 @@
 from import_export import fields, resources, widgets
 from .models import GSTReturn, NotFile
+from datetime import datetime
+from decimal import Decimal
+
+class DecimalWidget(widgets.Widget):
+    """Custom widget to handle float to Decimal conversion"""
+    def clean(self, value, row=None, **kwargs):
+        if value is None or value == '':
+            return Decimal('0')
+        try:
+            return Decimal(str(value))
+        except:
+            return Decimal('0')
 
 class GSTReturnResource(resources.ModelResource):
     tax_period = fields.Field(attribute='tax_period', column_name='Tax Period')
@@ -11,21 +23,57 @@ class GSTReturnResource(resources.ModelResource):
     dzongkhag = fields.Field(attribute='dzongkhag', column_name='Dzongkhag')
     organisation_type = fields.Field(attribute='organisation_type', column_name='Organisation Type')
     frequency = fields.Field(attribute='frequency', column_name='Frequency')
-    declared_sales = fields.Field(attribute='declared_sales', column_name='Declared Sales')
-    declared_domestic_purchase = fields.Field(attribute='declared_domestic_purchase', column_name='Declared Domestic Purchase/Taxable Expenses')
-    declared_import_value = fields.Field(attribute='declared_import_value', column_name='Declared Import Value')
-    ecms_import_value = fields.Field(attribute='ecms_import_value', column_name='eCMS Import Value')
-    declared_import_gst = fields.Field(attribute='declared_import_gst', column_name='Declared Import GST')
-    domestic_purchase_itc_claimed = fields.Field(attribute='domestic_purchase_itc_claimed', column_name='Domestic Purchase ITC  Claimed')
-    total_itc_claimed = fields.Field(attribute='total_itc_claimed', column_name='Total ITC Claimed')
-    declared_output_gst = fields.Field(attribute='declared_output_gst', column_name='Declared Output GST')
-    gst_payable_refundable = fields.Field(attribute='gst_payable_refundable', column_name='GST Payable / Refundable (GST Return)')
-    actual_gst_payment_received = fields.Field(attribute='actual_gst_payment_received', column_name='Actual GST Payment Received')
-    bank_deposits = fields.Field(attribute='bank_deposits', column_name='Bank Deposits')
+    declared_sales = fields.Field(attribute='declared_sales', column_name='Declared Sales', widget=DecimalWidget())
+    declared_domestic_purchase = fields.Field(attribute='declared_domestic_purchase', column_name='Declared Domestic Purchase/Taxable Expenses', widget=DecimalWidget())
+    declared_import_value = fields.Field(attribute='declared_import_value', column_name='Declared Import Value', widget=DecimalWidget())
+    ecms_import_value = fields.Field(attribute='ecms_import_value', column_name='eCMS Import Value', widget=DecimalWidget())
+    declared_import_gst = fields.Field(attribute='declared_import_gst', column_name='Declared Import GST', widget=DecimalWidget())
+    domestic_purchase_itc_claimed = fields.Field(attribute='domestic_purchase_itc_claimed', column_name='Domestic Purchase ITC  Claimed', widget=DecimalWidget())
+    total_itc_claimed = fields.Field(attribute='total_itc_claimed', column_name='Total ITC Claimed', widget=DecimalWidget())
+    declared_output_gst = fields.Field(attribute='declared_output_gst', column_name='Declared Output GST', widget=DecimalWidget())
+    gst_payable_refundable = fields.Field(attribute='gst_payable_refundable', column_name='GST Payable / Refundable (GST Return)', widget=DecimalWidget())
+    actual_gst_payment_received = fields.Field(attribute='actual_gst_payment_received', column_name='Actual GST Payment Received', widget=DecimalWidget())
+    bank_deposits = fields.Field(attribute='bank_deposits', column_name='Bank Deposits', widget=DecimalWidget())
     filing_status = fields.Field(attribute='filing_status', column_name='Filing Status')
     payment_status = fields.Field(attribute='payment_status', column_name='Payment Status')
     compliance_status = fields.Field(attribute='compliance_status', column_name='Compliance Status')
     remarks = fields.Field(attribute='remarks', column_name='Remarks')
+    
+    def before_import_row(self, row, **kwargs):
+        # Handle empty filing_delay_days values
+        if not row.get('Filing Delay (Days)'):
+            row['Filing Delay (Days)'] = 0
+        
+        # Handle empty numeric fields - set to 0
+        numeric_fields = [
+            'Declared Sales', 'Declared Domestic Purchase/Taxable Expenses', 
+            'Declared Import Value', 'eCMS Import Value', 'Declared Import GST',
+            'Domestic Purchase ITC  Claimed', 'Total ITC Claimed', 
+            'Declared Output GST', 'GST Payable / Refundable (GST Return)',
+            'Actual GST Payment Received', 'Bank Deposits'
+        ]
+        
+        for field in numeric_fields:
+            if not row.get(field):
+                row[field] = 0
+        
+        # Handle tax_period format - convert from date to YYYY-MM-DD format if needed
+        tax_period = row.get('Tax Period')
+        if tax_period:
+            try:
+                # Try to parse as date and convert to YYYY-MM-DD format
+                date_str = str(tax_period).strip()
+                # Remove time component if present
+                if ' ' in date_str:
+                    date_str = date_str.split(' ')[0]
+                
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+                row['Tax Period'] = date_obj.strftime('%Y-%m-%d')
+            except:
+                # If not a date, keep as is
+                pass
+        
+        return row
     
     class Meta:
         model = GSTReturn

@@ -20,8 +20,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import redirect
 
+# Use default admin site to avoid circular import issues
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/taxpayers/', include('taxpayers.urls')),
+    path('api/returns/', include('returns.urls')),
+    path('api/risk-assessment/', include('risk_assessment.urls')),
     path('', lambda request: redirect('login/')),
     path('', include('core.urls')),
     path('taxpayers/', include('taxpayers.urls')),

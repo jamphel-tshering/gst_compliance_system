@@ -3,6 +3,7 @@ from import_export.admin import ImportExportModelAdmin
 from .models import RefundRegister
 from .resources import RefundRegisterResource
 
+
 def get_display_value(obj, field_name):
     """Helper function to get display value for choice fields"""
     value = getattr(obj, field_name)

@@ -1,6 +1,10 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import GSTReturnViewSet
+
+router = DefaultRouter()
+router.register(r'returns', GSTReturnViewSet, basename='return')
 
 urlpatterns = [
-    # Return URLs will be added here
+    path('', include(router.urls)),
 ]
