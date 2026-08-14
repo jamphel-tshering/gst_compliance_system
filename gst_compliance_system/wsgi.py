@@ -21,5 +21,22 @@ try:
 except Exception as e:
     print(f"Migration error: {e}")
 
+# Create admin user if not exists
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+try:
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@gst-system.local',
+            password='admin123'
+        )
+        print("Admin user created: admin/admin123")
+    else:
+        print("Admin user already exists")
+except Exception as e:
+    print(f"User creation error: {e}")
+
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
