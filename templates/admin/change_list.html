@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if show_dashboard_link %}
+        <li>
+            <a href="{{ dashboard_url }}" class="button" target="_blank">
+                📊 {{ dashboard_title|default:"Dashboard" }}
+            </a>
+        </li>
+    {% endif %}
+{% endblock %}

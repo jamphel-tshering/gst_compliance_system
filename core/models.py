@@ -3,7 +3,7 @@ from django.db import models
 
 class User(AbstractUser):
     """
-    Extended User model for GST Compliance System
+    Extended User model for GST Compliance System with granular access control
     """
     USER_ROLES = (
         ('administrator', 'Administrator'),
@@ -17,11 +17,74 @@ class User(AbstractUser):
     role = models.CharField(max_length=50, choices=USER_ROLES, default='compliance')
     phone = models.CharField(max_length=20, blank=True)
     department = models.CharField(max_length=100, blank=True)
-    employee_id = models.CharField(max_length=20, unique=True, blank=True)
+    employee_id = models.CharField(max_length=20, unique=True, null=True, blank=True)  # Allow NULL for unique constraint
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_password_change = models.DateTimeField(null=True, blank=True)
+    
+    # GRANULAR ACCESS CONTROL FIELDS - All optional for individual access grant
+    # Taxpayer Module Access
+    can_view_taxpayers = models.BooleanField(default=False, verbose_name='View Taxpayers')
+    can_add_taxpayers = models.BooleanField(default=False, verbose_name='Add Taxpayers')
+    can_edit_taxpayers = models.BooleanField(default=False, verbose_name='Edit Taxpayers')
+    can_delete_taxpayers = models.BooleanField(default=False, verbose_name='Delete Taxpayers')
+    
+    # GST Returns Module Access
+    can_view_returns = models.BooleanField(default=False, verbose_name='View GST Returns')
+    can_add_returns = models.BooleanField(default=False, verbose_name='Add GST Returns')
+    can_edit_returns = models.BooleanField(default=False, verbose_name='Edit GST Returns')
+    can_delete_returns = models.BooleanField(default=False, verbose_name='Delete GST Returns')
+    
+    # Refunds Module Access
+    can_view_refunds = models.BooleanField(default=False, verbose_name='View Refunds')
+    can_add_refunds = models.BooleanField(default=False, verbose_name='Add Refunds')
+    can_edit_refunds = models.BooleanField(default=False, verbose_name='Edit Refunds')
+    can_delete_refunds = models.BooleanField(default=False, verbose_name='Delete Refunds')
+    
+    # Compliance Module Access
+    can_view_compliance = models.BooleanField(default=False, verbose_name='View Compliance')
+    can_add_compliance = models.BooleanField(default=False, verbose_name='Add Compliance')
+    can_edit_compliance = models.BooleanField(default=False, verbose_name='Edit Compliance')
+    can_delete_compliance = models.BooleanField(default=False, verbose_name='Delete Compliance')
+    
+    # Risk Assessment Module Access
+    can_view_risk_assessment = models.BooleanField(default=False, verbose_name='View Risk Assessment')
+    can_run_risk_assessment = models.BooleanField(default=False, verbose_name='Run Risk Assessment')
+    can_edit_risk_assessment = models.BooleanField(default=False, verbose_name='Edit Risk Assessment')
+    can_approve_risk_assessment = models.BooleanField(default=False, verbose_name='Approve Risk Assessment')
+    
+    # Enforcement & Recovery Module Access
+    can_view_enforcement = models.BooleanField(default=False, verbose_name='View Enforcement')
+    can_add_enforcement = models.BooleanField(default=False, verbose_name='Add Enforcement')
+    can_edit_enforcement = models.BooleanField(default=False, verbose_name='Edit Enforcement')
+    can_delete_enforcement = models.BooleanField(default=False, verbose_name='Delete Enforcement')
+    
+    # Audit Module Access
+    can_view_audit = models.BooleanField(default=False, verbose_name='View Audit')
+    can_create_audit = models.BooleanField(default=False, verbose_name='Create Audit')
+    can_edit_audit = models.BooleanField(default=False, verbose_name='Edit Audit')
+    can_approve_audit = models.BooleanField(default=False, verbose_name='Approve Audit')
+    
+    # Reports Module Access
+    can_view_reports = models.BooleanField(default=False, verbose_name='View Reports')
+    can_generate_reports = models.BooleanField(default=False, verbose_name='Generate Reports')
+    can_export_reports = models.BooleanField(default=False, verbose_name='Export Reports')
+    
+    # User Management Access
+    can_view_users = models.BooleanField(default=False, verbose_name='View Users')
+    can_add_users = models.BooleanField(default=False, verbose_name='Add Users')
+    can_edit_users = models.BooleanField(default=False, verbose_name='Edit Users')
+    can_delete_users = models.BooleanField(default=False, verbose_name='Delete Users')
+    can_manage_permissions = models.BooleanField(default=False, verbose_name='Manage Permissions')
+    
+    # System Settings Access
+    can_view_settings = models.BooleanField(default=False, verbose_name='View Settings')
+    can_edit_settings = models.BooleanField(default=False, verbose_name='Edit Settings')
+    
+    # Import/Export Access
+    can_import_data = models.BooleanField(default=False, verbose_name='Import Data')
+    can_export_data = models.BooleanField(default=False, verbose_name='Export Data')
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -56,25 +119,90 @@ class User(AbstractUser):
     def is_compliance(self):
         return self.role == 'compliance'
     
-    def can_edit_taxpayers(self):
-        """Can edit taxpayer data"""
-        return self.role in ['administrator', 'registration_enquiry', 'compliance']
+    # Granular permission methods - using the new permission fields
+    def has_module_access(self, module):
+        """Check if user has any access to a module"""
+        module_permissions = {
+            'taxpayers': self.can_view_taxpayers or self.can_add_taxpayers or self.can_edit_taxpayers or self.can_delete_taxpayers,
+            'returns': self.can_view_returns or self.can_add_returns or self.can_edit_returns or self.can_delete_returns,
+            'refunds': self.can_view_refunds or self.can_add_refunds or self.can_edit_refunds or self.can_delete_refunds,
+            'compliance': self.can_view_compliance or self.can_add_compliance or self.can_edit_compliance or self.can_delete_compliance,
+            'risk_assessment': self.can_view_risk_assessment or self.can_run_risk_assessment or self.can_edit_risk_assessment or self.can_approve_risk_assessment,
+            'enforcement': self.can_view_enforcement or self.can_add_enforcement or self.can_edit_enforcement or self.can_delete_enforcement,
+            'audit': self.can_view_audit or self.can_create_audit or self.can_edit_audit or self.can_approve_audit,
+            'reports': self.can_view_reports or self.can_generate_reports or self.can_export_reports,
+            'users': self.can_view_users or self.can_add_users or self.can_edit_users or self.can_delete_users or self.can_manage_permissions,
+            'settings': self.can_view_settings or self.can_edit_settings,
+        }
+        return module_permissions.get(module, False)
     
-    def can_edit_returns(self):
-        """Can edit GST returns"""
-        return self.role in ['administrator', 'compliance']
-    
-    def can_edit_refunds(self):
-        """Can edit refund data"""
-        return self.role in ['administrator', 'audit_refund']
-    
-    def can_view_all(self):
-        """Can view all data"""
-        return self.role in ['administrator', 'section_head', 'audit_refund']
-    
-    def can_manage_users(self):
-        """Can manage users"""
-        return self.role in ['administrator', 'section_head']
+    def get_access_summary(self):
+        """Get summary of user's access permissions"""
+        access_summary = {
+            'taxpayers': {
+                'view': self.can_view_taxpayers,
+                'add': self.can_add_taxpayers,
+                'edit': self.can_edit_taxpayers,
+                'delete': self.can_delete_taxpayers
+            },
+            'returns': {
+                'view': self.can_view_returns,
+                'add': self.can_add_returns,
+                'edit': self.can_edit_returns,
+                'delete': self.can_delete_returns
+            },
+            'refunds': {
+                'view': self.can_view_refunds,
+                'add': self.can_add_refunds,
+                'edit': self.can_edit_refunds,
+                'delete': self.can_delete_refunds
+            },
+            'compliance': {
+                'view': self.can_view_compliance,
+                'add': self.can_add_compliance,
+                'edit': self.can_edit_compliance,
+                'delete': self.can_delete_compliance
+            },
+            'risk_assessment': {
+                'view': self.can_view_risk_assessment,
+                'run': self.can_run_risk_assessment,
+                'edit': self.can_edit_risk_assessment,
+                'approve': self.can_approve_risk_assessment
+            },
+            'enforcement': {
+                'view': self.can_view_enforcement,
+                'add': self.can_add_enforcement,
+                'edit': self.can_edit_enforcement,
+                'delete': self.can_delete_enforcement
+            },
+            'audit': {
+                'view': self.can_view_audit,
+                'create': self.can_create_audit,
+                'edit': self.can_edit_audit,
+                'approve': self.can_approve_audit
+            },
+            'reports': {
+                'view': self.can_view_reports,
+                'generate': self.can_generate_reports,
+                'export': self.can_export_reports
+            },
+            'users': {
+                'view': self.can_view_users,
+                'add': self.can_add_users,
+                'edit': self.can_edit_users,
+                'delete': self.can_delete_users,
+                'manage_permissions': self.can_manage_permissions
+            },
+            'settings': {
+                'view': self.can_view_settings,
+                'edit': self.can_edit_settings
+            },
+            'data': {
+                'import': self.can_import_data,
+                'export': self.can_export_data
+            }
+        }
+        return access_summary
 
 
 class AuditLog(models.Model):
@@ -114,7 +242,7 @@ class SystemSettings(models.Model):
     System-wide configuration settings - simplified with specific fields
     """
     # General Settings
-    system_name = models.CharField(max_length=200, default='GST Compliance System', verbose_name='System Name')
+    system_name = models.CharField(max_length=200, default='RRCO/GST Mongar Administration', verbose_name='System Name')
     organization_name = models.CharField(max_length=200, default='Revenue and Customs Division', verbose_name='Organization Name')
     
     # Contact Information

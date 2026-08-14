@@ -1,0 +1,234 @@
+{% extends "jazzmin/base_site.html" %}
+{% load static %}
+{% load jazzmin %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- KPI Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-primary text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Total Taxpayers</h6>
+                            <h2 class="mb-0">{{ kpi_total_taxpayers }}</h2>
+                        </div>
+                        <i class="fa fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-success text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Active Taxpayers</h6>
+                            <h2 class="mb-0">{{ kpi_active_taxpayers }}</h2>
+                        </div>
+                        <i class="fa fa-user-check fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-warning text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Pending Returns</h6>
+                            <h2 class="mb-0">{{ kpi_pending_returns }}</h2>
+                        </div>
+                        <i class="fa fa-clock fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card bg-danger text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">High Risk Cases</h6>
+                            <h2 class="mb-0">{{ kpi_high_risk }}</h2>
+                        </div>
+                        <i class="fa fa-exclamation-triangle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Taxpayers by Organisation Type</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="orgTypeChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Taxpayers by Dzongkhag</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="dzongkhagChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row mb-4">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Filing Frequency</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="frequencyChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Taxpayer Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Monthly Returns Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyTrendChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Summary -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Risk Assessment Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around">
+                        <div class="text-center">
+                            <span class="badge badge-danger">High</span>
+                            <div class="mt-2"><strong>{{ risk_high }}</strong></div>
+                        </div>
+                        <div class="text-center">
+                            <span class="badge badge-warning">Medium</span>
+                            <div class="mt-2"><strong>{{ risk_medium }}</strong></div>
+                        </div>
+                        <div class="text-center">
+                            <span class="badge badge-success">Low</span>
+                            <div class="mt-2"><strong>{{ risk_low }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Audit Status Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-around">
+                        <div class="text-center">
+                            <span class="badge badge-primary">Total</span>
+                            <div class="mt-2"><strong>{{ audit_total }}</strong></div>
+                        </div>
+                        <div class="text-center">
+                            <span class="badge badge-success">Completed</span>
+                            <div class="mt-2"><strong>{{ audit_completed }}</strong></div>
+                        </div>
+                        <div class="text-center">
+                            <span class="badge badge-warning">Pending</span>
+                            <div class="mt-2"><strong>{{ audit_pending }}</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Charts data from context
+    const orgTypeData = {{ org_type_chart_data|safe }};
+    const dzongkhagData = {{ dzongkhag_chart_data|safe }};
+    const frequencyData = {{ frequency_chart_data|safe }};
+    const statusData = {{ status_chart_data|safe }};
+    const monthlyTrendData = {{ monthly_trend_data|safe }};
+
+    // Org Type Chart
+    new Chart(document.getElementById('orgTypeChart'), {
+        type: 'bar',
+        data: orgTypeData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Dzongkhag Chart
+    new Chart(document.getElementById('dzongkhagChart'), {
+        type: 'pie',
+        data: dzongkhagData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Frequency Chart
+    new Chart(document.getElementById('frequencyChart'), {
+        type: 'doughnut',
+        data: frequencyData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Status Chart
+    new Chart(document.getElementById('statusChart'), {
+        type: 'bar',
+        data: statusData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Monthly Trend Chart
+    new Chart(document.getElementById('monthlyTrendChart'), {
+        type: 'line',
+        data: monthlyTrendData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+{% endblock %}

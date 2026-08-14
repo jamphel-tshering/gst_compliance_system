@@ -1,0 +1,108 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .date-picker-input {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 150px;
+    }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Mode-dependent field visibility
+    const modeField = document.getElementById('id_mode');
+    const socialMediaDetailsField = document.getElementById('id_social_media_details');
+    const otherDetailsField = document.getElementById('id_other_details');
+    
+    function toggleModeDependentFields() {
+        if (modeField && socialMediaDetailsField && otherDetailsField) {
+            const modeValue = modeField.value;
+            const socialFieldRow = socialMediaDetailsField.closest('.form-row');
+            const otherFieldRow = otherDetailsField.closest('.form-row');
+            
+            // Show/hide fields based on mode
+            if (modeValue === 'Social Media') {
+                socialFieldRow.style.display = 'block';
+                socialMediaDetailsField.required = true;
+                otherFieldRow.style.display = 'none';
+                otherDetailsField.required = false;
+                otherDetailsField.value = '';
+            } else if (modeValue === 'Other') {
+                socialFieldRow.style.display = 'none';
+                socialMediaDetailsField.required = false;
+                socialMediaDetailsField.value = '';
+                otherFieldRow.style.display = 'block';
+                otherDetailsField.required = true;
+            } else {
+                socialFieldRow.style.display = 'none';
+                socialMediaDetailsField.required = false;
+                socialMediaDetailsField.value = '';
+                otherFieldRow.style.display = 'none';
+                otherDetailsField.required = false;
+                otherDetailsField.value = '';
+            }
+        }
+    }
+    
+    // Initial check
+    if (modeField) {
+        modeField.addEventListener('change', toggleModeDependentFields);
+        toggleModeDependentFields();
+    }
+    
+    // Handle GSTIN auto-fetch
+    const gstinField = document.getElementById('id_gstin');
+    const taxpayerNameField = document.getElementById('id_taxpayer_name');
+    const cidField = document.getElementById('id_cid_company_reg_no');
+    
+    let fetchTimeout;
+    
+    function fetchTaxpayerInfo() {
+        clearTimeout(fetchTimeout);
+        
+        const gstin = gstinField.value.trim();
+        
+        console.log('GSTIN entered:', gstin);
+        
+        if (gstin.length >= 5) { // Wait for reasonable GSTIN length
+            fetchTimeout = setTimeout(function() {
+                console.log('Fetching taxpayer info for:', gstin);
+                
+                // Use the REST API endpoint instead of admin endpoint
+                const url = `/api/taxpayers/taxpayers/fetch_info/?gstin=${gstin}`;
+                console.log('Request URL:', url);
+                
+                fetch(url)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Response data:', data);
+                        if (data.success) {
+                            taxpayerNameField.value = data.taxpayer_name || '';
+                            cidField.value = data.cid_company_reg_no || '';
+                            console.log('Auto-filled: Name:', data.taxpayer_name, 'CID:', data.cid_company_reg_no);
+                        } else {
+                            console.log('No taxpayer found or error:', data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching taxpayer info:', error);
+                    });
+            }, 300); // Reduce debounce time to 300ms
+        }
+    }
+    
+    if (gstinField) {
+        gstinField.addEventListener('input', fetchTaxpayerInfo);
+        console.log('GSTIN auto-fetch listener attached');
+    } else {
+        console.error('GSTIN field not found');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% load i18n %}
+<div class="portlet light bordered">
+    <div class="portlet-title">
+        <div class="caption">
+            <i class="icon-shield font-dark"></i>
+            <span class="caption-subject font-dark bold uppercase">Compliance & Enforcement Summary</span>
+        </div>
+    </div>
+    <div class="portlet-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="dashboard-stat dashboard-stat-v2 red">
+                    <div class="visual">
+                        <i class="fa fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="{{ high_risk }}">{{ high_risk }}</span>
+                        </div>
+                        <div class="desc">High Risk</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-stat dashboard-stat-v2 yellow">
+                    <div class="visual">
+                        <i class="fa fa-exclamation"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="{{ medium_risk }}">{{ medium_risk }}</span>
+                        </div>
+                        <div class="desc">Medium Risk</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dashboard-stat dashboard-stat-v2 green">
+                    <div class="visual">
+                        <i class="fa fa-check-circle"></i>
+                    </div>
+                    <div class="details">
+                        <div class="number">
+                            <span data-counter="counterup" data-value="{{ low_risk }}">{{ low_risk }}</span>
+                        </div>
+                        <div class="desc">Low Risk</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

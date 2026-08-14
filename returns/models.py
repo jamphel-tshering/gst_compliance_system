@@ -54,8 +54,35 @@ class GSTReturn(models.Model):
         ('Unknown Taxpayer', 'Unknown Taxpayer'),
     )
     
+    TAX_PERIOD_CHOICES = (
+        ('Jan-2026', 'Jan-2026'),
+        ('Feb-2026', 'Feb-2026'),
+        ('Mar-2026', 'Mar-2026'),
+        ('Apr-2026', 'Apr-2026'),
+        ('May-2026', 'May-2026'),
+        ('Jun-2026', 'Jun-2026'),
+        ('Jul-2026', 'Jul-2026'),
+        ('Aug-2026', 'Aug-2026'),
+        ('Sep-2026', 'Sep-2026'),
+        ('Oct-2026', 'Oct-2026'),
+        ('Nov-2026', 'Nov-2026'),
+        ('Dec-2026', 'Dec-2026'),
+        ('Jan-2027', 'Jan-2027'),
+        ('Feb-2027', 'Feb-2027'),
+        ('Mar-2027', 'Mar-2027'),
+        ('Apr-2027', 'Apr-2027'),
+        ('May-2027', 'May-2027'),
+        ('Jun-2027', 'Jun-2027'),
+        ('Jul-2027', 'Jul-2027'),
+        ('Aug-2027', 'Aug-2027'),
+        ('Sep-2027', 'Sep-2027'),
+        ('Oct-2027', 'Oct-2027'),
+        ('Nov-2027', 'Nov-2027'),
+        ('Dec-2027', 'Dec-2027'),
+    )
+    
     # Period Information
-    tax_period = models.CharField(max_length=20, verbose_name='Tax Period (e.g., Jan-2026)')
+    tax_period = models.CharField(max_length=20, choices=TAX_PERIOD_CHOICES, verbose_name='Tax Period')
     return_due_date = models.DateField(null=True, blank=True, verbose_name='Return Due Date')
     return_filing_date = models.DateField(null=True, blank=True, verbose_name='Return Filing Date')
     filing_delay_days = models.IntegerField(default=0, null=True, blank=True, verbose_name='Filing Delay (Days)')
@@ -126,7 +153,9 @@ class GSTReturn(models.Model):
                 from datetime import datetime, date, timedelta
                 import calendar
                 
-                tax_date = datetime.strptime(str(self.tax_period), '%Y-%m-%d').date()
+                # Parse tax_period from Jan-2026 format
+                tax_date = datetime.strptime(str(self.tax_period), '%b-%Y').date()
+                
                 # Due date = End of tax period + 30 days
                 # For monthly, end of month is last day of the month
                 if self.frequency == 'Monthly':

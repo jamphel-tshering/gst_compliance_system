@@ -6,21 +6,44 @@ class ReportTemplate(models.Model):
     Report Templates for Standard and Custom Reports
     """
     REPORT_TYPES = (
-        ('compliance', 'Compliance Report'),
-        ('risk_assessment', 'Risk Assessment Report'),
-        ('audit_selection', 'Audit Selection Report'),
-        ('refund_analysis', 'Refund Analysis Report'),
-        ('taxpayer_summary', 'Taxpayer Summary Report'),
-        ('custom', 'Custom Report'),
+        ('management', 'Management Reports'),
+        ('taxpayer', 'Taxpayer Reports'),
+        ('returns', 'GST Return & Revenue Reports'),
+        ('compliance', 'Compliance Reports'),
+        ('risk', 'Risk & Selection Reports'),
+        ('audit', 'Audit Reports'),
+        ('refund', 'Refund Reports'),
+        ('enforcement', 'Enforcement Reports'),
+        ('officer', 'Officer / Workload Reports'),
+        ('custom', 'Custom Reports'),
+    )
+    
+    REPORT_CATEGORIES = (
+        ('management', 'Management Reports'),
+        ('taxpayer', 'Taxpayer Reports'),
+        ('returns', 'GST Return & Revenue Reports'),
+        ('compliance', 'Compliance Reports'),
+        ('risk', 'Risk & Selection Reports'),
+        ('audit', 'Audit Reports'),
+        ('refund', 'Refund Reports'),
+        ('enforcement', 'Enforcement Reports'),
+        ('officer', 'Officer / Workload Reports'),
+        ('custom', 'Custom Reports'),
     )
     
     name = models.CharField(max_length=200, verbose_name='Report Name')
     report_type = models.CharField(max_length=30, choices=REPORT_TYPES)
+    category = models.CharField(max_length=30, choices=REPORT_CATEGORIES, default='custom')
     description = models.TextField(blank=True)
     
     # Report Configuration
     template_file = models.FileField(upload_to='report_templates/', blank=True)
     parameters = models.JSONField(default=dict, blank=True)
+    
+    # Report Fields Configuration
+    fields_config = models.JSONField(default=dict, blank=True)  # Column configuration
+    filters_config = models.JSONField(default=dict, blank=True)  # Available filters
+    calculations_config = models.JSONField(default=dict, blank=True)  # KPI calculations
     
     is_active = models.BooleanField(default=True)
     is_public = models.BooleanField(default=False)
@@ -32,10 +55,10 @@ class ReportTemplate(models.Model):
     class Meta:
         verbose_name = 'Report Template'
         verbose_name_plural = 'Report Templates'
-        ordering = ['name']
+        ordering = ['category', 'name']
     
     def __str__(self):
-        return self.name
+        return f"{self.category} - {self.name}"
 
 
 class GeneratedReport(models.Model):

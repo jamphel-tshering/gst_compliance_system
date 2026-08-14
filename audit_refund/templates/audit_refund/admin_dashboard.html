@@ -1,0 +1,110 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <div style="margin-bottom: 30px;">
+        <h1 style="color: #2c5282; margin: 0 0 10px 0;">Audit & Refund</h1>
+        <p style="color: #718096; margin: 0;">Audit & Refund Management System</p>
+    </div>
+    
+    <!-- Audit Sub-Module -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Audit Sub-Module</h2>
+        
+        <!-- Audit Statistics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Total Audit Cases</h3>
+                <p style="margin: 0; color: #667eea; font-size: 24px; font-weight: bold;">{{ total_audit_cases }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #ed8936;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Pending Assignment</h3>
+                <p style="margin: 0; color: #ed8936; font-size: 24px; font-weight: bold;">{{ pending_assignment }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #48bb78;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Assigned</h3>
+                <p style="margin: 0; color: #48bb78; font-size: 24px; font-weight: bold;">{{ assigned }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">In Progress</h3>
+                <p style="margin: 0; color: #4299e1; font-size: 24px; font-weight: bold;">{{ in_progress }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #805ad5;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Completed</h3>
+                <p style="margin: 0; color: #805ad5; font-size: 24px; font-weight: bold;">{{ completed }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #38a169;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Closed</h3>
+                <p style="margin: 0; color: #38a169; font-size: 24px; font-weight: bold;">{{ closed }}</p>
+            </div>
+        </div>
+        
+        <!-- Audit Management Links -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h3 style="color: white; margin: 0 0 15px 0; font-size: 18px;">Audit Cases</h3>
+                <p style="color: rgba(255,255,255,0.9); margin: 0 0 20px 0; font-size: 14px;">Manage audit cases from risk selection</p>
+                <a href="{{ audit_cases_url }}" style="display: inline-block; background: white; color: #667eea; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Manage Cases</a>
+            </div>
+            <div style="background: linear-gradient(135deg, #4299e1 0%, #667eea 100%); padding: 25px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h3 style="color: white; margin: 0 0 15px 0; font-size: 18px;">Audit Assessments</h3>
+                <p style="color: rgba(255,255,255,0.9); margin: 0 0 20px 0; font-size: 14px;">Detailed assessment calculations</p>
+                <a href="{{ audit_assessments_url }}" style="display: inline-block; background: white; color: #4299e1; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Manage Assessments</a>
+            </div>
+            <div style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); padding: 25px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <h3 style="color: white; margin: 0 0 15px 0; font-size: 18px;">Audit Findings</h3>
+                <p style="color: rgba(255,255,255,0.9); margin: 0 0 20px 0; font-size: 14px;">Record audit findings and discrepancies</p>
+                <a href="{{ audit_findings_url }}" style="display: inline-block; background: white; color: #48bb78; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Manage Findings</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Refund Sub-Module -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #f5576c; padding-bottom: 10px;">Refund Sub-Module</h2>
+        
+        <!-- Refund Statistics -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #f5576c;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Total Refunds</h3>
+                <p style="margin: 0; color: #f5576c; font-size: 24px; font-weight: bold;">{{ total_refunds }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #ed8936;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Pending</h3>
+                <p style="margin: 0; color: #ed8936; font-size: 24px; font-weight: bold;">{{ pending_refunds }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #48bb78;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Approved</h3>
+                <p style="margin: 0; color: #48bb78; font-size: 24px; font-weight: bold;">{{ approved_refunds }}</p>
+            </div>
+            <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #38a169;">
+                <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Rejected</h3>
+                <p style="margin: 0; color: #38a169; font-size: 24px; font-weight: bold;">{{ rejected_refunds }}</p>
+            </div>
+        </div>
+        
+        <!-- Refund Management Link -->
+        <div style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); padding: 25px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <h3 style="color: white; margin: 0 0 15px 0; font-size: 18px;">Refund Cases</h3>
+            <p style="color: rgba(255,255,255,0.9); margin: 0 0 20px 0; font-size: 14px;">Manage refund applications and processing</p>
+            <a href="{{ refunds_url }}" style="display: inline-block; background: white; color: #f5576c; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Manage Refunds</a>
+        </div>
+    </div>
+    
+    <!-- Workflow Information -->
+    <div style="background: #f7fafc; padding: 25px; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #cbd5e0; padding-bottom: 10px;">Workflow Information</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+            <div>
+                <h3 style="color: #4a5568; margin: 0 0 15px 0; font-size: 16px;">Audit Workflow</h3>
+                <p style="color: #718096; margin: 0; font-size: 14px;">Compliance Risk → Audit Case → Audit Assignment → Assessment → Findings → Outcome → Closure</p>
+            </div>
+            <div>
+                <h3 style="color: #4a5568; margin: 0 0 15px 0; font-size: 16px;">Refund Workflow</h3>
+                <p style="color: #718096; margin: 0; font-size: 14px;">GST Return → Refund Application → Verification → Adjustment → Approval/Rejection → Completion</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

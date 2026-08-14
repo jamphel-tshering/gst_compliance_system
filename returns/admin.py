@@ -8,6 +8,16 @@ from .models import GSTReturn
 from .resources import GSTReturnResource
 
 
+# Custom date input widget for dd-mm-yyyy format
+class CustomDateInput(DateInput):
+    input_type = 'date'
+    def __init__(self, attrs=None):
+        default_attrs = {'type': 'date'}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+
 
 class TaxPeriodFilter(SimpleListFilter):
     """Custom filter for tax period to display in Jan-2026 format"""
@@ -15,19 +25,21 @@ class TaxPeriodFilter(SimpleListFilter):
     parameter_name = 'tax_period'
     
     def lookups(self, request, model_admin):
-        # Get unique tax periods and convert to Jan-2026 format
+        # Get unique tax periods in Jan-2026 format
         tax_periods = set()
         for obj in GSTReturn.objects.all():
             if obj.tax_period:
-                try:
-                    date_obj = datetime.strptime(str(obj.tax_period), '%Y-%m-%d')
-                    formatted = date_obj.strftime('%b-%Y')
-                    tax_periods.add((obj.tax_period, formatted))
-                except:
-                    tax_periods.add((obj.tax_period, obj.tax_period))
+                tax_periods.add((obj.tax_period, obj.tax_period))
         
-        # Sort by date
-        sorted_periods = sorted(tax_periods, key=lambda x: x[0], reverse=True)
+        # Sort by month-year (parse and sort)
+        def sort_key(period):
+            try:
+                from datetime import datetime
+                return datetime.strptime(period[0], '%b-%Y')
+            except:
+                return datetime.min
+        
+        sorted_periods = sorted(tax_periods, key=sort_key, reverse=True)
         return sorted_periods
     
     def queryset(self, request, queryset):
@@ -37,15 +49,51 @@ class TaxPeriodFilter(SimpleListFilter):
 
 
 class GSTReturnForm(forms.ModelForm):
-    """Custom form with date pickers"""
+    """Custom form with tax period dropdown"""
     class Meta:
         model = GSTReturn
         fields = '__all__'
-        widgets = {
-            'tax_period': DateInput(attrs={'type': 'date'}),
-            'return_due_date': DateInput(attrs={'type': 'date'}),
-            'return_filing_date': DateInput(attrs={'type': 'date'}),
-        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set tax period choices
+        TAX_PERIOD_CHOICES = [
+            ('Jan-2026', 'Jan-2026'),
+            ('Feb-2026', 'Feb-2026'),
+            ('Mar-2026', 'Mar-2026'),
+            ('Apr-2026', 'Apr-2026'),
+            ('May-2026', 'May-2026'),
+            ('Jun-2026', 'Jun-2026'),
+            ('Jul-2026', 'Jul-2026'),
+            ('Aug-2026', 'Aug-2026'),
+            ('Sep-2026', 'Sep-2026'),
+            ('Oct-2026', 'Oct-2026'),
+            ('Nov-2026', 'Nov-2026'),
+            ('Dec-2026', 'Dec-2026'),
+            ('Jan-2027', 'Jan-2027'),
+            ('Feb-2027', 'Feb-2027'),
+            ('Mar-2027', 'Mar-2027'),
+            ('Apr-2027', 'Apr-2027'),
+            ('May-2027', 'May-2027'),
+            ('Jun-2027', 'Jun-2027'),
+            ('Jul-2027', 'Jul-2027'),
+            ('Aug-2027', 'Aug-2027'),
+            ('Sep-2027', 'Sep-2027'),
+            ('Oct-2027', 'Oct-2027'),
+            ('Nov-2027', 'Nov-2027'),
+            ('Dec-2027', 'Dec-2027'),
+        ]
+        
+        if 'tax_period' in self.fields:
+            self.fields['tax_period'].choices = TAX_PERIOD_CHOICES
+            self.fields['tax_period'].required = True
+        
+        # Add date widgets for date fields
+        from django.forms import DateInput
+        if 'return_due_date' in self.fields:
+            self.fields['return_due_date'].widget = DateInput(attrs={'type': 'date'})
+        if 'return_filing_date' in self.fields:
+            self.fields['return_filing_date'].widget = DateInput(attrs={'type': 'date'})
 
 def get_display_value(obj, field_name):
     """Helper function to get display value for choice fields"""
@@ -74,6 +122,11 @@ class GSTReturnAdmin(ImportExportModelAdmin):
     list_filter = [TaxPeriodFilter, 'filing_status', 'payment_status', 'compliance_status', 'organisation_type', 'dzongkhag']
     search_fields = ['gstin', 'taxpayer_name']
     ordering = ['-tax_period', 'taxpayer_name']
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
+            kwargs['widget'] = CustomDateInput()
+        return super().formfield_for_dbfield(db_field, **kwargs)
     readonly_fields = ['created_at', 'updated_at']
     list_per_page = 100
     show_full_result_count = False
@@ -111,25 +164,19 @@ class GSTReturnAdmin(ImportExportModelAdmin):
     def display_tax_period(self, obj):
         """Display tax period in Jan-2026 format"""
         if obj.tax_period:
-            try:
-                # Parse YYYY-MM-DD format and convert to Jan-2026
-                from datetime import datetime as dt
-                date_obj = dt.strptime(str(obj.tax_period), '%Y-%m-%d')
-                return date_obj.strftime('%b-%Y')
-            except:
-                return obj.tax_period
+            return obj.tax_period  # Already stored in Jan-2026 format
         return '-'
     display_tax_period.short_description = 'Tax Period'
     
     def display_return_due_date(self, obj):
-        """Display return due date in dd-mm-yyyy format"""
+        """Display return due date in dd-mm-yyyy format with leading zeros"""
         if obj.return_due_date:
             return obj.return_due_date.strftime('%d-%m-%Y')
         return '-'
     display_return_due_date.short_description = 'Return Due Date'
     
     def display_return_filing_date(self, obj):
-        """Display return filing date in dd-mm-yyyy format"""
+        """Display return filing date in dd-mm-yyyy format with leading zeros"""
         if obj.return_filing_date:
             return obj.return_filing_date.strftime('%d-%m-%Y')
         return '-'

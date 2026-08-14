@@ -1,0 +1,438 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .executive-summary-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+    
+    .back-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
+    .back-button:hover {
+        background: #5568d3;
+    }
+    
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .report-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+    }
+    
+    .report-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+    
+    .kpi-section {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .kpi-section h2 {
+        color: #333;
+        margin: 0 0 20px 0;
+        font-size: 1.5em;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .kpi-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .kpi-card h3 {
+        margin: 0 0 10px 0;
+        color: #666;
+        font-size: 0.9em;
+        text-transform: uppercase;
+    }
+    
+    .kpi-card .value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #333;
+        margin: 0 0 5px 0;
+    }
+    
+    .kpi-card .percentage {
+        font-size: 0.9em;
+        color: #666;
+    }
+    
+    .toolbar {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+    
+    .btn-excel { background: #217346; color: white; }
+    .btn-excel:hover { background: #1e6b3e; }
+    
+    .btn-pdf { background: #dc3545; color: white; }
+    .btn-pdf:hover { background: #c82333; }
+    
+    .btn-csv { background: #009688; color: white; }
+    .btn-csv:hover { background: #00796b; }
+    
+    .btn-print { background: #6c757d; color: white; }
+    .btn-print:hover { background: #5a6268; }
+    
+    .filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .filter-form label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: bold;
+    }
+    
+    .filter-form select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .filter-form button {
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .filter-form button:hover {
+        background: #5568d3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="executive-summary-container">
+    <a href="/reports/" class="back-button">← Back to Reports</a>
+    
+    <div class="report-header">
+        <h1>📊 Executive GST Summary</h1>
+        <p>Reporting Period: {{ report_period }} | Generated: {{ generated_date }} by {{ generated_by }}</p>
+    </div>
+    
+    <div class="toolbar">
+        <button class="btn-excel" onclick="exportExcel()">📊 Export Excel</button>
+        <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+        <button class="btn-csv" onclick="exportCSV()">📋 Export CSV</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+    </div>
+    
+    <div class="filter-section">
+        <form method="GET" class="filter-form">
+            <div>
+                <label>From Tax Period:</label>
+                <select name="from_tax_period">
+                    <option value="">All Periods</option>
+                    {% for period in filters.tax_periods %}
+                    <option value="{{ period }}" {% if period == filters.from_tax_period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>To Tax Period:</label>
+                <select name="to_tax_period">
+                    <option value="">All Periods</option>
+                    {% for period in filters.tax_periods %}
+                    <option value="{{ period }}" {% if period == filters.to_tax_period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit">Generate Report</button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Taxpayers Section -->
+    <div class="kpi-section">
+        <h2>👥 Taxpayers</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Active Taxpayers</h3>
+                <div class="value">{{ kpis.taxpayers.active }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>New Registrations</h3>
+                <div class="value">{{ kpis.taxpayers.new_registrations }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Deregistrations</h3>
+                <div class="value">{{ kpis.taxpayers.deregistrations }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Returns Section -->
+    <div class="kpi-section">
+        <h2>📋 Returns</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Expected Returns</h3>
+                <div class="value">{{ kpis.returns.expected }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Filed</h3>
+                <div class="value">{{ kpis.returns.filed }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Late Filed</h3>
+                <div class="value">{{ kpis.returns.late }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Not Filed</h3>
+                <div class="value">{{ kpis.returns.not_filed }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Filing Compliance</h3>
+                <div class="value">{{ kpis.returns.filing_compliance }}%</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- GST Section -->
+    <div class="kpi-section">
+        <h2>💰 GST (in Nu.)</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Declared Sales</h3>
+                <div class="value">{{ kpis.gst.declared_sales|floatformat:2 }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Output GST</h3>
+                <div class="value">{{ kpis.gst.output_gst|floatformat:2 }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>ITC Claimed</h3>
+                <div class="value">{{ kpis.gst.itc_claimed|floatformat:2 }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>GST Payable</h3>
+                <div class="value">{{ kpis.gst.gst_payable|floatformat:2 }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Actual Payment</h3>
+                <div class="value">{{ kpis.gst.actual_payment|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Compliance Section -->
+    <div class="kpi-section">
+        <h2>✅ Compliance</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Compliant</h3>
+                <div class="value">{{ kpis.compliance.compliant }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Late Filers</h3>
+                <div class="value">{{ kpis.compliance.late_filers }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Non-Filers</h3>
+                <div class="value">{{ kpis.compliance.non_filers }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Payment Defaults</h3>
+                <div class="value">{{ kpis.compliance.payment_defaults }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Risk Section -->
+    <div class="kpi-section">
+        <h2>⚠️ Risk</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Low Risk</h3>
+                <div class="value">{{ kpis.risk.low }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Medium Risk</h3>
+                <div class="value">{{ kpis.risk.medium }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>High Risk</h3>
+                <div class="value">{{ kpis.risk.high }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Critical Risk</h3>
+                <div class="value">{{ kpis.risk.critical }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Selection Section -->
+    <div class="kpi-section">
+        <h2>🎯 Selection</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>AUDIT</h3>
+                <div class="value">{{ kpis.selection.audit }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>REVIEW</h3>
+                <div class="value">{{ kpis.selection.review }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>MONITOR</h3>
+                <div class="value">{{ kpis.selection.monitor }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>NOT SELECTED</h3>
+                <div class="value">{{ kpis.selection.not_selected }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audit Section -->
+    <div class="kpi-section">
+        <h2>🔍 Audit</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Total Cases</h3>
+                <div class="value">{{ kpis.audit.total }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Pending</h3>
+                <div class="value">{{ kpis.audit.pending }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>In Progress</h3>
+                <div class="value">{{ kpis.audit.in_progress }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Completed</h3>
+                <div class="value">{{ kpis.audit.completed }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Closed</h3>
+                <div class="value">{{ kpis.audit.closed }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Refund Section -->
+    <div class="kpi-section">
+        <h2>💸 Refund (in Nu.)</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Total Claims</h3>
+                <div class="value">{{ kpis.refund.total }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Total Claimed</h3>
+                <div class="value">{{ kpis.refund.claimed|floatformat:2 }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Total Approved</h3>
+                <div class="value">{{ kpis.refund.approved|floatformat:2 }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Total Adjusted</h3>
+                <div class="value">{{ kpis.refund.adjusted|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Enforcement Section -->
+    <div class="kpi-section">
+        <h2>⚖️ Enforcement (in Nu.)</h2>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h3>Cases</h3>
+                <div class="value">{{ kpis.enforcement.cases }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Amount Due</h3>
+                <div class="value">{{ kpis.enforcement.amount_due|floatformat:2 }}</div>
+            </div>
+            <div class="kpi-card">
+                <h3>Amount Recovered</h3>
+                <div class="value">{{ kpis.enforcement.amount_recovered|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function exportExcel() {
+    window.location.href = '/reports/export/executive_summary/excel/';
+}
+
+function exportPDF() {
+    window.location.href = '/reports/export/executive_summary/pdf/';
+}
+
+function exportCSV() {
+    window.location.href = '/reports/export/executive_summary/csv/';
+}
+</script>
+{% endblock %}

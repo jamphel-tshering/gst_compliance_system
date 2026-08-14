@@ -1,0 +1,274 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='compliance' %}">Compliance & Enforcement</a>
+    &rsaquo; Compliance Risk & Referral
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <!-- Header Section -->
+    <div style="margin-bottom: 20px;">
+        <h1 style="margin: 0 0 10px 0; color: #2c5282;">Compliance & Enforcement</h1>
+        <p style="margin: 0; color: #718096; font-size: 14px;">Compliance monitoring, risk-based audit selection and enforcement & recovery.</p>
+    </div>
+
+    <!-- Module Navigation -->
+    <div style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px;">
+        <a href="{% url 'admin:compliance_complianceriskreferral_changelist' %}" style="text-decoration: none; color: #2c5282; font-weight: bold; padding: 8px 16px; background-color: #ebf8ff; border-radius: 4px;">
+            Compliance Risk & Referral
+        </a>
+        <a href="{% url 'admin:compliance_compliancemonitoring_changelist' %}" style="text-decoration: none; color: #718096; padding: 8px 16px;">
+            Compliance Monitoring
+        </a>
+        <a href="{% url 'admin:compliance_enforcementrecovery_changelist' %}" style="text-decoration: none; color: #718096; padding: 8px 16px;">
+            Enforcement & Recovery
+        </a>
+    </div>
+
+    <!-- Module Description -->
+    <div style="margin-bottom: 25px; padding: 15px; background-color: #f7fafc; border-left: 4px solid #4299e1; border-radius: 4px;">
+        <h2 style="margin: 0 0 8px 0; color: #2c5282; font-size: 18px;">Compliance Risk & Referral</h2>
+        <p style="margin: 0; color: #4a5568; font-size: 14px;">Period-based, risk-based audit selection engine. The system auto-identifies taxpayers; officers add professional judgment.</p>
+    </div>
+
+    <!-- Configuration Section -->
+    <div style="margin-bottom: 25px; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 15px 0; color: #2c5282; font-size: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Configure</h3>
+        
+        <form method="post" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            {% csrf_token %}
+            
+            <div style="flex: 1; min-width: 200px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568; font-size: 13px;">From Tax Period</label>
+                <select name="from_period" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px;">
+                    <option value="">Select Period</option>
+                    {% for period in tax_periods %}
+                        <option value="{{ period }}" {% if period == current_from_period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="flex: 1; min-width: 200px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #4a5568; font-size: 13px;">To Tax Period</label>
+                <select name="to_period" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px;">
+                    <option value="">Select Period</option>
+                    {% for period in tax_periods %}
+                        <option value="{{ period }}" {% if period == current_to_period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" name="action" value="run_assessment" style="background-color: #4299e1; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+                    Run Risk Assessment
+                </button>
+                <button type="submit" name="action" value="save_decisions" style="background-color: #48bb78; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+                    Save Officer Decisions
+                </button>
+                <button type="submit" name="action" value="finalize" style="background-color: #ed8936; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+                    Finalize
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Assessment Statistics -->
+    <div style="margin-bottom: 25px; padding: 20px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 15px 0; color: #2c5282; font-size: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Assessment Generated</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+            <!-- Past Assessments -->
+            <div>
+                <h4 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Past assessments:</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #4a5568; font-size: 13px;">
+                    {% for past in past_assessments %}
+                        <li style="margin-bottom: 5px;">{{ past.assessment_from_period }}–{{ past.assessment_to_period }}</li>
+                    {% empty %}
+                        <li style="color: #a0aec0;">No past assessments</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Current Statistics -->
+            <div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                    <div style="padding: 15px; background-color: #ebf8ff; border-radius: 4px; border-left: 3px solid #4299e1;">
+                        <div style="font-size: 12px; color: #718096; margin-bottom: 5px;">Total Assessed</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #2c5282;">{{ total_assessed }}</div>
+                    </div>
+                    <div style="padding: 15px; background-color: #f7fafc; border-radius: 4px; border-left: 3px solid #718096;">
+                        <div style="font-size: 12px; color: #718096; margin-bottom: 5px;">Period</div>
+                        <div style="font-size: 14px; font-weight: bold; color: #2c5282;">{{ current_from_period }} – {{ current_to_period }}</div>
+                    </div>
+                    <div style="padding: 15px; background-color: #fff5f5; border-radius: 4px; border-left: 3px solid #fc8181;">
+                        <div style="font-size: 12px; color: #718096; margin-bottom: 5px;">Audit</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #c53030;">{{ audit_count }}</div>
+                    </div>
+                    <div style="padding: 15px; background-color: #fffaf0; border-radius: 4px; border-left: 3px solid #ed8936;">
+                        <div style="font-size: 12px; color: #718096; margin-bottom: 5px;">Review</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #c05621;">{{ review_count }}</div>
+                    </div>
+                    <div style="padding: 15px; background-color: #f0fff4; border-radius: 4px; border-left: 3px solid #48bb78;">
+                        <div style="font-size: 12px; color: #718096; margin-bottom: 5px;">Monitor</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #2f855a;">{{ monitor_count }}</div>
+                    </div>
+                    <div style="padding: 15px; background-color: #f7fafc; border-radius: 4px; border-left: 3px solid #a0aec0;">
+                        <div style="font-size: 12px; color: #718096; margin-bottom: 5px;">Not Selected</div>
+                        <div style="font-size: 24px; font-weight: bold; color: #718096;">{{ not_selected_count }}</div>
+                    </div>
+                </div>
+                
+                <!-- Risk Level Breakdown -->
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <div style="flex: 1; padding: 10px; background-color: #fff5f5; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 12px; color: #718096;">Critical</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #c53030;">{{ critical_count }}</div>
+                    </div>
+                    <div style="flex: 1; padding: 10px; background-color: #fffaf0; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 12px; color: #718096;">High</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #c05621;">{{ high_count }}</div>
+                    </div>
+                    <div style="flex: 1; padding: 10px; background-color: #fffff0; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 12px; color: #718096;">Medium</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #b7791f;">{{ medium_count }}</div>
+                    </div>
+                    <div style="flex: 1; padding: 10px; background-color: #f0fff4; border-radius: 4px; text-align: center;">
+                        <div style="font-size: 12px; color: #718096;">Low</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #2f855a;">{{ low_count }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div style="margin-bottom: 20px; padding: 15px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px;">
+        <form method="get" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <input type="hidden" name="from_period" value="{{ current_from_period }}">
+            <input type="hidden" name="to_period" value="{{ current_to_period }}">
+            <div style="flex: 2; min-width: 200px;">
+                <input type="text" name="search" placeholder="Search GSTIN / taxpayer..." value="{{ search_query }}" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px;">
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <select name="risk_level" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px;">
+                    <option value="">Risk Level - All</option>
+                    <option value="Critical" {% if risk_level == 'Critical' %}selected{% endif %}>Critical</option>
+                    <option value="High" {% if risk_level == 'High' %}selected{% endif %}>High</option>
+                    <option value="Medium" {% if risk_level == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="Low" {% if risk_level == 'Low' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <select name="system_decision" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px;">
+                    <option value="">System Decision - All</option>
+                    <option value="AUDIT" {% if system_decision == 'AUDIT' %}selected{% endif %}>AUDIT</option>
+                    <option value="REVIEW" {% if system_decision == 'REVIEW' %}selected{% endif %}>REVIEW</option>
+                    <option value="MONITOR" {% if system_decision == 'MONITOR' %}selected{% endif %}>MONITOR</option>
+                    <option value="NOT SELECTED" {% if system_decision == 'NOT SELECTED' %}selected{% endif %}>NOT SELECTED</option>
+                </select>
+            </div>
+            <div style="flex: 1; min-width: 150px;">
+                <select name="final_selection" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 14px;">
+                    <option value="">Final Selection - All</option>
+                    <option value="AUDIT" {% if final_selection == 'AUDIT' %}selected{% endif %}>AUDIT</option>
+                    <option value="REVIEW" {% if final_selection == 'REVIEW' %}selected{% endif %}>REVIEW</option>
+                    <option value="MONITOR" {% if final_selection == 'MONITOR' %}selected{% endif %}>MONITOR</option>
+                    <option value="NOT SELECTED" {% if final_selection == 'NOT SELECTED' %}selected{% endif %}>NOT SELECTED</option>
+                </select>
+            </div>
+            <button type="submit" style="background-color: #4299e1; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">
+                Search
+            </button>
+            <a href="{% url 'compliance_risk_dashboard' %}" style="color: #4299e1; text-decoration: none; font-size: 14px;">Clear Filters</a>
+        </form>
+    </div>
+
+    <!-- Results Table -->
+    <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+        <div style="padding: 15px; background-color: #f7fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #4a5568; font-size: 14px;">Showing {{ results|length }} results</span>
+            <div style="display: flex; gap: 10px;">
+                <a href="?sort_by=risk_score_desc" style="color: #4299e1; text-decoration: none; font-size: 14px;">Sort by Risk Score (desc)</a>
+                <a href="?sort_by=risk_level_desc" style="color: #4299e1; text-decoration: none; font-size: 14px;">Sort by Risk Level (desc)</a>
+            </div>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead style="background-color: #f7fafc;">
+                <tr>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk ID</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">From Period</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">To Period</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">GSTIN</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Taxpayer</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk Type</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk Indicator</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk Pattern</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Score</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Level</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">System</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Assessor</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Officer Rating</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Final</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Referred To</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in results %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px; color: #2c5282;"><a href="{% url 'admin:compliance_complianceriskreferral_change' record.id %}" style="color: #4299e1; text-decoration: none;">{{ record.risk_id }}</a></td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.assessment_from_period|default:"—" }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.assessment_to_period|default:"—" }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.gstin }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.taxpayer_name }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.risk_type }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.risk_indicator }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.risk_pattern }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.risk_score|default:"—" }}</td>
+                    <td style="padding: 12px;">
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; 
+                            {% if record.risk_level == 'Critical' %}background-color: #fff5f5; color: #c53030;
+                            {% elif record.risk_level == 'High' %}background-color: #fffaf0; color: #c05621;
+                            {% elif record.risk_level == 'Medium' %}background-color: #fffff0; color: #b7791f;
+                            {% else %}background-color: #f0fff4; color: #2f855a;{% endif %}">
+                            {{ record.risk_level }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.system_decision }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.assessor__username|default:"—" }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.officer_risk_rating|default:"—" }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.final_selection|default:"—" }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.final_referred_to|default:"—" }}</td>
+                    <td style="padding: 12px; color: #4a5568;">{{ record.action_status }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="15" style="padding: 20px; text-align: center; color: #a0aec0;">No risk assessments found. Run a risk assessment to generate results.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Officer Decision Instructions -->
+    <div style="margin-top: 20px; padding: 15px; background-color: #fffaf0; border: 1px solid #ed8936; border-radius: 6px;">
+        <h3 style="margin: 0 0 10px 0; color: #c05621; font-size: 16px;">📝 How to Add Officer Decisions</h3>
+        <p style="margin: 0; color: #4a5568; font-size: 14px;">
+            To add officer decisions, click on any <strong>Risk ID</strong> in the table above. This will open the detailed admin form where you can:
+        </p>
+        <ul style="margin: 10px 0 0 20px; color: #4a5568; font-size: 14px;">
+            <li>Add officer assessment and remarks</li>
+            <li>Set officer risk rating</li>
+            <li>Override system decisions with justification</li>
+            <li>Set final selection and refer to specific officers</li>
+            <li>Track action status and completion</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

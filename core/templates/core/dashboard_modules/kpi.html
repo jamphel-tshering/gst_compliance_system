@@ -1,0 +1,57 @@
+{% load i18n %}
+<div class="kpi-container">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="dashboard-stat dashboard-stat-v2 blue">
+                <div class="visual">
+                    <i class="fa fa-users"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        <span data-counter="counterup" data-value="{{ total_taxpayers }}">{{ total_taxpayers }}</span>
+                    </div>
+                    <div class="desc">Total Taxpayers</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat dashboard-stat-v2 green">
+                <div class="visual">
+                    <i class="fa fa-user-check"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        <span data-counter="counterup" data-value="{{ active_taxpayers }}">{{ active_taxpayers }}</span>
+                    </div>
+                    <div class="desc">Active Taxpayers</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat dashboard-stat-v2 yellow">
+                <div class="visual">
+                    <i class="fa fa-clock"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        <span data-counter="counterup" data-value="{{ pending_returns }}">{{ pending_returns }}</span>
+                    </div>
+                    <div class="desc">Pending Returns</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-stat dashboard-stat-v2 red">
+                <div class="visual">
+                    <i class="fa fa-exclamation-triangle"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        <span data-counter="counterup" data-value="{{ high_risk_count }}">{{ high_risk_count }}</span>
+                    </div>
+                    <div class="desc">High Risk Cases</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

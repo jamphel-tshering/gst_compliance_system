@@ -1,0 +1,318 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .report-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+    
+    .back-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .report-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+    }
+    
+    .toolbar {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+    
+    .btn-excel { background: #217346; color: white; }
+    .btn-excel:hover { background: #1e6b3e; }
+    
+    .btn-pdf { background: #dc3545; color: white; }
+    .btn-pdf:hover { background: #c82333; }
+    
+    .btn-csv { background: #009688; color: white; }
+    .btn-csv:hover { background: #00796b; }
+    
+    .btn-print { background: #6c757d; color: white; }
+    .btn-print:hover { background: #5a6268; }
+    
+    .filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .filter-form label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: bold;
+    }
+    
+    .filter-form select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .filter-form button {
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .compliance-summary {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .compliance-summary h2 {
+        color: #333;
+        margin: 0 0 20px 0;
+    }
+    
+    .compliance-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .compliance-card {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .compliance-card h3 {
+        margin: 0 0 10px 0;
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .compliance-card .value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .data-table thead {
+        background: #667eea;
+        color: white;
+    }
+    
+    .data-table th, .data-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .pagination a {
+        padding: 8px 16px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    
+    .pagination .current {
+        padding: 8px 16px;
+        background: #5568d3;
+        color: white;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <a href="/reports/" class="back-button">← Back to Reports</a>
+    
+    <div class="report-header">
+        <h1>💳 Payment Compliance Report</h1>
+        <p>Reporting Period: {{ report_period }} | Generated: {{ generated_date }} by {{ generated_by }}</p>
+    </div>
+    
+    <div class="toolbar">
+        <button class="btn-excel" onclick="exportExcel()">📊 Export Excel</button>
+        <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+        <button class="btn-csv" onclick="exportCSV()">📋 Export CSV</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+    </div>
+    
+    <div class="filter-section">
+        <form method="GET" class="filter-form">
+            <div>
+                <label>From Tax Period:</label>
+                <select name="from_tax_period">
+                    <option value="">All Periods</option>
+                    {% for period in filters.tax_periods %}
+                    <option value="{{ period }}" {% if period == filters.from_tax_period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>To Tax Period:</label>
+                <select name="to_tax_period">
+                    <option value="">All Periods</option>
+                    {% for period in filters.tax_periods %}
+                    <option value="{{ period }}" {% if period == filters.to_tax_period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit">Generate Report</button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="compliance-summary">
+        <h2>💳 Payment Compliance Summary</h2>
+        <div class="compliance-cards">
+            <div class="compliance-card">
+                <h3>Total with Liability</h3>
+                <div class="value">{{ compliance_summary.total_with_liability }}</div>
+            </div>
+            <div class="compliance-card">
+                <h3>Total Paid</h3>
+                <div class="value">{{ compliance_summary.total_paid }}</div>
+            </div>
+            <div class="compliance-card">
+                <h3>Payment Compliance</h3>
+                <div class="value">{{ compliance_summary.payment_compliance }}%</div>
+            </div>
+        </div>
+    </div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Tax Period</th>
+                <th>GSTIN</th>
+                <th>Taxpayer Name</th>
+                <th>GST Payable (Nu.)</th>
+                <th>Actual Payment (Nu.)</th>
+                <th>Outstanding (Nu.)</th>
+                <th>Payment Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.tax_period }}</td>
+                <td><a href="/admin/returns/gstreturn/{{ payment.id }}/change/">{{ payment.gstin }}</a></td>
+                <td>{{ payment.taxpayer_name }}</td>
+                <td>{{ payment.gst_payable }}</td>
+                <td>{{ payment.actual_payment }}</td>
+                <td>{{ payment.outstanding }}</td>
+                <td>{{ payment.payment_status }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center;">No payment records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="pagination">
+        {% if payments.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">First</a>
+        <a href="?page={{ payments.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+        {% endif %}
+        
+        <span class="current">Page {{ payments.number }} of {{ payments.paginator.num_pages }}</span>
+        
+        {% if payments.has_next %}
+        <a href="?page={{ payments.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+        <a href="?page={{ payments.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last</a>
+        {% endif %}
+    </div>
+    
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <strong>Total Records:</strong> {{ payments.paginator.count }}
+    </div>
+</div>
+
+<script>
+function exportExcel() {
+    window.location.href = '/reports/export/payment_compliance/excel/';
+}
+
+function exportPDF() {
+    window.location.href = '/reports/export/payment_compliance/pdf/';
+}
+
+function exportCSV() {
+    window.location.href = '/reports/export/payment_compliance/csv/';
+}
+</script>
+{% endblock %}

@@ -57,18 +57,27 @@ class GSTReturnResource(resources.ModelResource):
             if not row.get(field):
                 row[field] = 0
         
-        # Handle tax_period format - convert from date to YYYY-MM-DD format if needed
+        # Handle tax_period format - keep as Jan-2026 format
         tax_period = row.get('Tax Period')
         if tax_period:
             try:
-                # Try to parse as date and convert to YYYY-MM-DD format
+                # If already in Jan-2026 format, keep as is
                 date_str = str(tax_period).strip()
-                # Remove time component if present
-                if ' ' in date_str:
-                    date_str = date_str.split(' ')[0]
-                
-                date_obj = datetime.strptime(date_str, '%Y-%m-%d')
-                row['Tax Period'] = date_obj.strftime('%Y-%m-%d')
+                if '-' in date_str and len(date_str.split('-')) == 2:
+                    # Check if it's already in month-year format
+                    month, year = date_str.split('-')
+                    # Validate it's a month name
+                    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                    if month in month_names:
+                        row['Tax Period'] = date_str  # Keep as Jan-2026 format
+                    else:
+                        # Try to convert from date format
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+                        row['Tax Period'] = date_obj.strftime('%b-%Y')
+                else:
+                    # Try to parse as date and convert to Jan-2026 format
+                    date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+                    row['Tax Period'] = date_obj.strftime('%b-%Y')
             except:
                 # If not a date, keep as is
                 pass

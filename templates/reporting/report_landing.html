@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .report-landing-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+    
+    .report-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .report-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2.5em;
+        font-weight: bold;
+    }
+    
+    .report-header p {
+        margin: 0;
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+    
+    .report-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+    
+    .report-category {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .report-category:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    
+    .category-icon {
+        font-size: 3em;
+        margin-bottom: 15px;
+    }
+    
+    .category-name {
+        font-size: 1.3em;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .category-description {
+        color: #666;
+        font-size: 0.95em;
+        margin-bottom: 15px;
+    }
+    
+    .report-count {
+        background: #f0f0f0;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        color: #666;
+        display: inline-block;
+    }
+    
+    .back-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
+    .back-button:hover {
+        background: #5568d3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-landing-container">
+    <a href="/admin/" class="back-button">← Back to Admin</a>
+    
+    <div class="report-header">
+        <h1>📊 GST REPORTS</h1>
+        <p>Centralized Reporting and Analytics Layer</p>
+    </div>
+    
+    <div class="report-categories">
+        {% for category in report_categories %}
+        <div class="report-category" onclick="location.href='#category-{{ category.id }}'">
+            <div class="category-icon">{{ category.icon }}</div>
+            <div class="category-name">{{ category.name }}</div>
+            <div class="category-description">{{ category.description }}</div>
+            <div class="report-count">{{ category.reports|length }} Reports</div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Report Categories Details -->
+    {% for category in report_categories %}
+    <div id="category-{{ category.id }}" style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+        <h2 style="color: #333; margin-bottom: 20px;">{{ category.icon }} {{ category.name }}</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+            {% for report in category.reports %}
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; transition: background 0.3s ease;">
+                <a href="/reports/report/{{ report.id }}/" style="text-decoration: none; color: inherit;">
+                    <h3 style="margin: 0 0 8px 0; color: #333; font-size: 1.1em;">{{ report.name }}</h3>
+                    <p style="margin: 0; color: #666; font-size: 0.9em;">{{ report.description }}</p>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

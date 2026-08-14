@@ -6,7 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.db.models import Sum
 from taxpayers.models import TaxpayerMaster
 from returns.models import GSTReturn
-from risk_assessment.models import ComplianceRiskRegister
+from compliance.models import ComplianceRiskReferral
 
 def login_view(request):
     if request.method == 'POST':
@@ -31,16 +31,16 @@ def dashboard(request):
     # Get dashboard statistics
     total_taxpayers = TaxpayerMaster.objects.count()
     total_returns = GSTReturn.objects.count()
-    high_risk_taxpayers = ComplianceRiskRegister.objects.filter(overall_risk_level__in=['critical', 'high']).count()
-    open_audits = ComplianceRiskRegister.objects.filter(audit_selection='selected').count()
+    high_risk_taxpayers = ComplianceRiskReferral.objects.filter(risk_level__in=['Critical', 'High']).count()
+    open_audits = ComplianceRiskReferral.objects.filter(selection='Audit').count()
     
     # Get financial metrics using correct field names
     total_revenue = GSTReturn.objects.aggregate(total=Sum('declared_sales'))['total'] or 0
     
     # Get counts by status
     active_taxpayers = TaxpayerMaster.objects.filter(status='Active').count()
-    filed_returns = GSTReturn.objects.filter(filing_status='Filed').count()
-    not_filed_returns = GSTReturn.objects.filter(filing_status='Not Filed').count()
+    filed_returns = GSTReturn.objects.filter(filing_status='Filed On Time').count()
+    not_filed_returns = GSTReturn.objects.filter(filing_status='Overdue / Non-Filer').count()
     
     context = {
         'total_taxpayers': total_taxpayers,

@@ -1,0 +1,493 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2.5em;
+    }
+    
+    .dashboard-header p {
+        margin: 0;
+        font-size: 1.1em;
+        opacity: 0.9;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .stat-card h3 {
+        margin: 0 0 10px 0;
+        color: #666;
+        font-size: 0.9em;
+        text-transform: uppercase;
+    }
+    
+    .stat-card .value {
+        font-size: 2em;
+        font-weight: bold;
+        color: #333;
+    }
+    
+    .stat-card.critical { border-top: 4px solid #dc3545; }
+    .stat-card.high { border-top: 4px solid #fd7e14; }
+    .stat-card.medium { border-top: 4px solid #ffc107; }
+    .stat-card.low { border-top: 4px solid #28a745; }
+    .stat-card.audit { border-top: 4px solid #dc3545; }
+    .stat-card.review { border-top: 4px solid #ffc107; }
+    .stat-card.monitor { border-top: 4px solid #17a2b8; }
+    
+    .control-panel {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+    
+    .control-panel h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    .form-row {
+        display: flex;
+        gap: 20px;
+        align-items: flex-end;
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        flex: 1;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #555;
+    }
+    
+    .form-group select,
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #5568d3;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #218838;
+    }
+    
+    .results-section {
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .results-section h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .data-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #555;
+        position: sticky;
+        top: 0;
+    }
+    
+    .data-table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .badge-critical { background: #dc3545; color: white; }
+    .badge-high { background: #fd7e14; color: white; }
+    .badge-medium { background: #ffc107; color: #333; }
+    .badge-low { background: #28a745; color: white; }
+    
+    .badge-audit { background: #dc3545; color: white; }
+    .badge-review { background: #ffc107; color: #333; }
+    .badge-monitor { background: #17a2b8; color: white; }
+    .badge-not-selected { background: #6c757d; color: white; }
+    .badge-not { background: #6c757d; color: white; }
+    .badge-selected { background: #6c757d; color: white; }
+    
+    .risk-score {
+        font-weight: bold;
+    }
+    
+    .risk-score.high { color: #dc3545; }
+    .risk-score.medium { color: #ffc107; }
+    .risk-score.low { color: #28a745; }
+    
+    .past-assessments {
+        margin-top: 30px;
+        background: white;
+        padding: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .past-assessments h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 10px;
+    }
+    
+    .assessment-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .assessment-list li {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .assessment-list li:last-child {
+        border-bottom: none;
+    }
+    
+    .assessment-period {
+        font-weight: 600;
+        color: #667eea;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+    }
+    
+    .filter-section {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    
+    .filter-section h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #555;
+    }
+    
+    .filter-row {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-item {
+        flex: 1;
+        min-width: 150px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>🎯 Compliance Risk Assessment Dashboard</h1>
+        <p>Period-based, risk-based audit selection engine for GST compliance</p>
+    </div>
+    
+    <!-- Statistics Grid -->
+    <div class="stats-grid">
+        <div class="stat-card critical">
+            <h3>Critical Risk</h3>
+            <div class="value">{{ critical_count }}</div>
+        </div>
+        <div class="stat-card high">
+            <h3>High Risk</h3>
+            <div class="value">{{ high_count }}</div>
+        </div>
+        <div class="stat-card medium">
+            <h3>Medium Risk</h3>
+            <div class="value">{{ medium_count }}</div>
+        </div>
+        <div class="stat-card low">
+            <h3>Low Risk</h3>
+            <div class="value">{{ low_count }}</div>
+        </div>
+        <div class="stat-card audit">
+            <h3>Audit Selected</h3>
+            <div class="value">{{ audit_count }}</div>
+        </div>
+        <div class="stat-card review">
+            <h3>Review Selected</h3>
+            <div class="value">{{ review_count }}</div>
+        </div>
+        <div class="stat-card monitor">
+            <h3>Monitor Selected</h3>
+            <div class="value">{{ monitor_count }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Assessed</h3>
+            <div class="value">{{ total_assessed }}</div>
+        </div>
+    </div>
+    
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <h2>📊 Risk Assessment Controls</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="from_period">From Tax Period:</label>
+                    <select name="from_period" id="from_period">
+                        <option value="">Select Period</option>
+                        {% for period in tax_periods %}
+                        <option value="{{ period }}" {% if current_from_period == period %}selected{% endif %}>{{ period }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="to_period">To Tax Period:</label>
+                    <select name="to_period" id="to_period">
+                        <option value="">Select Period</option>
+                        {% for period in tax_periods %}
+                        <option value="{{ period }}" {% if current_to_period == period %}selected{% endif %}>{{ period }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" name="action" value="run_assessment" class="btn btn-primary">
+                        🚀 Run Risk Assessment
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        {% if current_from_period and current_to_period %}
+        <div style="background: #e8f4fd; padding: 15px; border-radius: 4px; border-left: 4px solid #007bff;">
+            <strong>Current Assessment Period:</strong> {{ current_from_period }} to {{ current_to_period }}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Results Section -->
+    <div class="results-section">
+        <h2>📋 Risk Assessment Results</h2>
+        
+        <!-- Filters -->
+        <div class="filter-section">
+            <h3>🔍 Filter Results</h3>
+            <form method="get" class="filter-row">
+                <div class="filter-item">
+                    <input type="text" name="search" placeholder="Search by GSTIN or Name" value="{{ search_query }}">
+                </div>
+                <div class="filter-item">
+                    <select name="risk_level">
+                        <option value="">All Risk Levels</option>
+                        <option value="Critical" {% if risk_level == 'Critical' %}selected{% endif %}>Critical</option>
+                        <option value="High" {% if risk_level == 'High' %}selected{% endif %}>High</option>
+                        <option value="Medium" {% if risk_level == 'Medium' %}selected{% endif %}>Medium</option>
+                        <option value="Low" {% if risk_level == 'Low' %}selected{% endif %}>Low</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <select name="system_decision">
+                        <option value="">All Decisions</option>
+                        <option value="AUDIT" {% if system_decision == 'AUDIT' %}selected{% endif %}>AUDIT</option>
+                        <option value="REVIEW" {% if system_decision == 'REVIEW' %}selected{% endif %}>REVIEW</option>
+                        <option value="MONITOR" {% if system_decision == 'MONITOR' %}selected{% endif %}>MONITOR</option>
+                        <option value="NOT SELECTED" {% if system_decision == 'NOT SELECTED' %}selected{% endif %}>NOT SELECTED</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <select name="sort_by">
+                        <option value="">Sort By</option>
+                        <option value="risk_level_desc" {% if sort_by == 'risk_level_desc' %}selected{% endif %}>Risk Level (High to Low)</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </div>
+            </form>
+        </div>
+        
+        <p><strong>Total Results:</strong> {{ total_results }}</p>
+        
+        {% if results %}
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Risk ID</th>
+                        <th>GSTIN</th>
+                        <th>Taxpayer Name</th>
+                        <th>Period</th>
+                        <th>Risk Level</th>
+                        <th>Risk Score</th>
+                        <th>Risk Type</th>
+                        <th>System Decision</th>
+                        <th>Final Selection</th>
+                        <th>Action Status</th>
+                        <th>Assessor</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td><strong>{{ result.risk_id }}</strong></td>
+                        <td>{{ result.gstin }}</td>
+                        <td>{{ result.taxpayer_name }}</td>
+                        <td>{{ result.assessment_from_period }} to {{ result.assessment_to_period }}</td>
+                        <td>
+                            <span class="badge badge-{{ result.risk_level|lower }}">{{ result.risk_level }}</span>
+                        </td>
+                        <td class="risk-score {% if result.risk_score >= 4 %}high{% elif result.risk_score >= 3 %}medium{% else %}low{% endif %}">
+                            {{ result.risk_score }}
+                        </td>
+                        <td>{{ result.risk_type|default:"-" }}</td>
+                        <td>
+                            {% if result.system_decision == 'AUDIT' %}
+                                <span class="badge badge-audit">{{ result.system_decision }}</span>
+                            {% elif result.system_decision == 'REVIEW' %}
+                                <span class="badge badge-review">{{ result.system_decision }}</span>
+                            {% elif result.system_decision == 'MONITOR' %}
+                                <span class="badge badge-monitor">{{ result.system_decision }}</span>
+                            {% elif result.system_decision == 'NOT SELECTED' %}
+                                <span class="badge badge-not-selected">{{ result.system_decision }}</span>
+                            {% else %}
+                                <span class="badge">{{ result.system_decision }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if result.final_selection == 'AUDIT' %}
+                                <span class="badge badge-audit">{{ result.final_selection }}</span>
+                            {% elif result.final_selection == 'REVIEW' %}
+                                <span class="badge badge-review">{{ result.final_selection }}</span>
+                            {% elif result.final_selection == 'MONITOR' %}
+                                <span class="badge badge-monitor">{{ result.final_selection }}</span>
+                            {% elif result.final_selection == 'NOT SELECTED' %}
+                                <span class="badge badge-not-selected">{{ result.final_selection }}</span>
+                            {% else %}
+                                <span class="badge">{{ result.final_selection|default:"-" }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ result.action_status|default:"-" }}</td>
+                        <td>{{ result.assessor__username|default:"-" }}</td>
+                        <td>
+                            <a href="/admin/compliance/complianceriskreferral/{{ result.id }}/change/" class="btn btn-sm btn-primary" style="padding: 4px 8px; font-size: 12px;">Edit</a>
+                            <a href="/admin/compliance/complianceriskreferral/{{ result.id }}/delete/" class="btn btn-sm btn-danger" style="padding: 4px 8px; font-size: 12px;">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-results">
+            <h3>No results found</h3>
+            <p>Run a risk assessment or adjust your filters to see results.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Past Assessments -->
+    <div class="past-assessments">
+        <h2>📜 Past Assessments</h2>
+        {% if past_assessments %}
+        <ul class="assessment-list">
+            {% for assessment in past_assessments %}
+            <li>
+                <span class="assessment-period">{{ assessment.assessment_from_period }} to {{ assessment.assessment_to_period }}</span>
+                <a href="?from_period={{ assessment.assessment_from_period }}&to_period={{ assessment.assessment_to_period }}" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">View</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: #999;">No past assessments found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

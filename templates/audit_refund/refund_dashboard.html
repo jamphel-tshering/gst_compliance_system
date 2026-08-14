@@ -1,0 +1,179 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h2>🎯 Refund Assessment Dashboard</h2>
+        <p>Comprehensive refund processing and risk assessment system</p>
+        
+        <!-- Statistics Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+            <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px;">📋 Total Applications</h3>
+                <div style="font-size: 32px; font-weight: bold;">{{ total_applications }}</div>
+            </div>
+            
+            <div style="padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px;">⏳ Pending</h3>
+                <div style="font-size: 32px; font-weight: bold;">{{ pending }}</div>
+            </div>
+            
+            <div style="padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px;">🔍 Under Review</h3>
+                <div style="font-size: 32px; font-weight: bold;">{{ under_review }}</div>
+            </div>
+            
+            <div style="padding: 20px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px;">✅ Approved</h3>
+                <div style="font-size: 32px; font-weight: bold;">{{ approved }}</div>
+            </div>
+            
+            <div style="padding: 20px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px;">❌ Rejected</h3>
+                <div style="font-size: 32px; font-weight: bold;">{{ rejected }}</div>
+            </div>
+            
+            <div style="padding: 20px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); border-radius: 12px; color: #333; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px;">💰 Paid</h3>
+                <div style="font-size: 32px; font-weight: bold;">{{ completed }}</div>
+            </div>
+        </div>
+        
+        <!-- Financial Summary -->
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #2196f3;">
+            <h3 style="margin-top: 0; color: #1976d2;">💵 Financial Summary</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div>
+                    <strong>Total Claimed:</strong> Nu. {{ total_claimed|floatformat:2 }}
+                </div>
+                <div>
+                    <strong>Total Approved:</strong> Nu. {{ total_approved|floatformat:2 }}
+                </div>
+                <div>
+                    <strong>Total Adjusted:</strong> Nu. {{ total_adjusted|floatformat:2 }}
+                </div>
+                <div>
+                    <strong>Success Rate:</strong> {% if total_applications > 0 %}{{ approved|floatformat:0 }}{% else %}0{% endif %}%
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filter Controls -->
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #4caf50;">
+            <h3 style="margin-top: 0; color: #388e3c;">📊 Refund Assessment Controls</h3>
+            <form method="GET" style="margin-top: 15px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Tax Period:</label>
+                        <select name="tax_period" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">All Periods</option>
+                            {% for period in available_periods %}
+                                <option value="{{ period }}" {% if filters.tax_period == period %}selected{% endif %}>{{ period }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Status:</label>
+                        <select name="status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            <option value="">All Statuses</option>
+                            <option value="submitted" {% if filters.status == 'submitted' %}selected{% endif %}>Submitted</option>
+                            <option value="under_review" {% if filters.status == 'under_review' %}selected{% endif %}>Under Review</option>
+                            <option value="processing" {% if filters.status == 'processing' %}selected{% endif %}>Processing</option>
+                            <option value="approved" {% if filters.status == 'approved' %}selected{% endif %}>Approved</option>
+                            <option value="rejected" {% if filters.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="paid" {% if filters.status == 'paid' %}selected{% endif %}>Paid</option>
+                            <option value="closed" {% if filters.status == 'closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-end;">
+                        <button type="submit" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                            🔍 Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Refund Results Table -->
+        <div style="margin-top: 30px;">
+            <h3 style="color: #1976d2;">📋 Refund Assessment Results</h3>
+            <p style="color: #666; margin-bottom: 15px;">Total Results: {{ recent_refunds|length }}</p>
+            
+            {% if recent_refunds %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <thead>
+                        <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <th style="padding: 12px; text-align: left;">Refund ID</th>
+                            <th style="padding: 12px; text-align: left;">GST TPN</th>
+                            <th style="padding: 12px; text-align: left;">Taxpayer Name</th>
+                            <th style="padding: 12px; text-align: left;">Tax Period</th>
+                            <th style="padding: 12px; text-align: left;">Claimed Amount</th>
+                            <th style="padding: 12px; text-align: left;">Approved Amount</th>
+                            <th style="padding: 12px; text-align: left;">Status</th>
+                            <th style="padding: 12px; text-align: left;">Claim Date</th>
+                            <th style="padding: 12px; text-align: left;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for refund in recent_refunds %}
+                        <tr style="{% cycle 'background-color: #f8f9fa;' '' %} border-bottom: 1px solid #ddd;">
+                            <td style="padding: 12px;">{{ refund.refund_id }}</td>
+                            <td style="padding: 12px;">{{ refund.gst_tpn }}</td>
+                            <td style="padding: 12px;">{{ refund.taxpayer_name }}</td>
+                            <td style="padding: 12px;">{{ refund.tax_period }}</td>
+                            <td style="padding: 12px;">Nu. {{ refund.claimed_amount|floatformat:2 }}</td>
+                            <td style="padding: 12px;">Nu. {{ refund.refund_approved|floatformat:2 }}</td>
+                            <td style="padding: 12px;">
+                                <span style="padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; 
+                                    {% if refund.status == 'approved' %}background-color: #d4edda; color: #155724;
+                                    {% elif refund.status == 'rejected' %}background-color: #f8d7da; color: #721c24;
+                                    {% elif refund.status == 'paid' %}background-color: #cce5ff; color: #004085;
+                                    {% elif refund.status == 'under_review' %}background-color: #fff3cd; color: #856404;
+                                    {% else %}background-color: #e2e3e5; color: #383d41;{% endif %}">
+                                    {{ refund.get_status_display }}
+                                </span>
+                            </td>
+                            <td style="padding: 12px;">{{ refund.claim_date|date:"d-m-Y" }}</td>
+                            <td style="padding: 12px;">
+                                <a href="/admin/audit_refund/refundregister/{{ refund.id }}/change/" style="padding: 4px 8px; background: #2196f3; color: white; text-decoration: none; border-radius: 4px; font-size: 12px;">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="padding: 20px; background-color: #f8f9fa; border-radius: 8px; text-align: center; color: #666;">
+                No refund records found matching the current filters.
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Actions -->
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #ff9800;">
+            <h3 style="margin-top: 0; color: #f57c00;">🚀 Quick Actions</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <a href="/admin/audit_refund/refundregister/add/" style="display: block; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; text-align: center; font-weight: bold;">
+                    ➕ Add New Refund
+                </a>
+                <a href="/admin/audit_refund/refundregister/" style="display: block; padding: 15px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; text-decoration: none; border-radius: 8px; text-align: center; font-weight: bold;">
+                    📋 View All Refunds
+                </a>
+                <a href="/admin/audit_refund/auditcase/" style="display: block; padding: 15px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; text-decoration: none; border-radius: 8px; text-align: center; font-weight: bold;">
+                    🔍 Audit Cases
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}

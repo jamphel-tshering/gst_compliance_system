@@ -1,0 +1,25 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .date-picker-input {
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 150px;
+    }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all date inputs in the form
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    
+    dateInputs.forEach(function(input) {
+        // Keep native date picker but ensure proper format
+        // The date picker will use YYYY-MM-DD internally
+        // Our admin display will show DD-MM-YYYY
+    });
+});
+</script>
+{% endblock %}

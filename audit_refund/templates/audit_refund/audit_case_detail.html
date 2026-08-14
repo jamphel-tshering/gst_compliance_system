@@ -1,0 +1,356 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #2c5282; margin-bottom: 30px;">Audit Case Detail: {{ audit_case.audit_case_id }}</h1>
+    
+    <!-- Navigation Links -->
+    <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h3 style="margin: 0 0 15px 0; color: #2c5282;">Quick Navigation</h3>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <a href="{% url 'admin:compliance_complianceriskreferral_change' audit_case.risk_referral.id %}" style="background: #667eea; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold;">View Risk Assessment</a>
+        </div>
+    </div>
+    
+    <!-- A. Case Information -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #667eea; padding-bottom: 10px;">A. Case Information</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <strong style="color: #4a5568;">Audit Case ID:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.audit_case_id }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Risk ID:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">
+                    <a href="{% url 'admin:compliance_complianceriskreferral_change' audit_case.risk_referral.id %}" style="color: #4299e1; text-decoration: none;">{{ audit_case.risk_referral.risk_id }}</a>
+                </p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assessment Date:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assessment_date }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">From Tax Period:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.from_tax_period }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">To Tax Period:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.to_tax_period }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">GSTIN:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.gstin }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Taxpayer Name:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.taxpayer_name }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Dzongkhag:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.dzongkhag|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Organisation Type:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.organisation_type|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Frequency:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.frequency|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assessment Type:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.get_assessment_type_display }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Audit Priority:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.get_audit_priority_display }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assigned Officer:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assigned_officer.get_full_name|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assigned Date:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assigned_date|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Due Date:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.due_date|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Status:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.get_status_display }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Case Closed Date:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.case_closed_date|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assessment Duration:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assessment_duration|default:"—" }} days</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assessor:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assessor.get_full_name|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Remarks:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.remarks|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- B. Compliance Risk (READ-ONLY) -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #ed8936; padding-bottom: 10px;">B. Compliance Risk (Read-Only)</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <strong style="color: #4a5568;">Risk ID:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.risk_id }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">From Period:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.assessment_from_period }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">To Period:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.assessment_to_period }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Risk Type:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.risk_type|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Risk Indicator:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.risk_indicator|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Risk Pattern:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.risk_pattern|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Risk Score:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.risk_score|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Risk Level:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.risk_level|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">System Decision:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.system_decision|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assessor:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.assessor.get_full_name|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Officer Rating:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.officer_rating|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Final Selection:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.final_selection|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Referred To:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.referred_to|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Action:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.risk_referral.action|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- C. Taxpayer Information -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #48bb78; padding-bottom: 10px;">C. Taxpayer Information</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <strong style="color: #4a5568;">GSTIN:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.gstin }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Taxpayer Name:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.taxpayer_name }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Dzongkhag:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.dzongkhag|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Organisation Type:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.organisation_type|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Frequency:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.frequency|default:"—" }}</p>
+            </div>
+        </div>
+        <p style="color: #718096; margin-top: 15px; font-style: italic;">Note: Taxpayer information is stored directly in the risk assessment. For complete taxpayer details, search using the GSTIN in the Taxpayers module.</p>
+    </div>
+    
+    <!-- D. GST Return Information -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #4299e1; padding-bottom: 10px;">D. GST Return Information</h2>
+        <p style="color: #718096; margin-bottom: 15px;">GST Return information for the audit period. Please search for returns using GSTIN {{ audit_case.gstin }} and period {{ audit_case.from_tax_period }} in the Returns module.</p>
+        <div style="background: #f7fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <p style="margin: 0; color: #4a5568;"><strong>GSTIN:</strong> {{ audit_case.gstin }}</p>
+            <p style="margin: 5px 0 0 0; color: #4a5568;"><strong>Tax Period:</strong> {{ audit_case.from_tax_period }} to {{ audit_case.to_tax_period }}</p>
+            <a href="{% url 'admin:returns_gstreturn_changelist' %}?gstin__exact={{ audit_case.gstin }}&tax_period__exact={{ audit_case.from_tax_period }}" style="display: inline-block; margin-top: 10px; background: #4299e1; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: bold;">Search GST Returns</a>
+        </div>
+    </div>
+    
+    <!-- E. Assessment -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #805ad5; padding-bottom: 10px;">E. Assessment</h2>
+        {% if audit_case.assessments.exists %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #f7fafc;">
+                    <tr>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">ASC No.</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Assessment Date</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Assessed Sales</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">GST Payable (Assessed)</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Variation</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Outcome</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for assessment in audit_case.assessments.all %}
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 12px;">{{ assessment.asc_no }}</td>
+                        <td style="padding: 12px;">{{ assessment.assessment_date }}</td>
+                        <td style="padding: 12px;">{{ assessment.assessed_sales_turnover|floatformat:2|default:"—" }}</td>
+                        <td style="padding: 12px;">{{ assessment.gst_payable_refundable_assessed|floatformat:2|default:"—" }}</td>
+                        <td style="padding: 12px;">{{ assessment.variation|floatformat:2|default:"—" }}</td>
+                        <td style="padding: 12px;">{{ assessment.get_assessment_outcome_display|default:"—" }}</td>
+                        <td style="padding: 12px;">
+                            <a href="{% url 'admin:audit_refund_auditassessment_change' assessment.id %}" style="color: #4299e1; text-decoration: none;">View/Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: #718096;">No assessments recorded yet.</p>
+        <a href="{% url 'admin:audit_refund_auditassessment_add' %}?audit_case={{ audit_case.id }}" style="background: #805ad5; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px;">Create Assessment</a>
+        {% endif %}
+    </div>
+    
+    <!-- F. Audit Findings -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #f5576c; padding-bottom: 10px;">F. Audit Findings</h2>
+        {% if audit_case.findings.exists %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #f7fafc;">
+                    <tr>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Finding ID</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Finding Type</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Discrepancy</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Amount Involved</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Action Taken</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for finding in audit_case.findings.all %}
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 12px;">{{ finding.finding_id }}</td>
+                        <td style="padding: 12px;">{{ finding.get_finding_type_display }}</td>
+                        <td style="padding: 12px;">{{ finding.discrepancy|truncatewords:10 }}</td>
+                        <td style="padding: 12px;">{{ finding.amount_involved|floatformat:2|default:"—" }}</td>
+                        <td style="padding: 12px;">{{ finding.action_taken|truncatewords:10 }}</td>
+                        <td style="padding: 12px;">
+                            <a href="{% url 'admin:audit_refund_auditfinding_change' finding.id %}" style="color: #4299e1; text-decoration: none;">View/Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color: #718096;">No findings recorded yet.</p>
+        <a href="{% url 'admin:audit_refund_auditfinding_add' %}?audit_case={{ audit_case.id }}" style="background: #f5576c; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px;">Add Finding</a>
+        {% endif %}
+    </div>
+    
+    <!-- G. Audit Outcome -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #48bb78; padding-bottom: 10px;">G. Audit Outcome</h2>
+        {% if audit_case.assessments.exists %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <strong style="color: #4a5568;">Final Assessment Outcome:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assessments.last.get_assessment_outcome_display|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Final Action Taken:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assessments.last.get_action_taken_display|default:"—" }}</p>
+            </div>
+        </div>
+        {% else %}
+        <p style="color: #718096;">No audit outcome recorded yet. Complete assessments first.</p>
+        {% endif %}
+    </div>
+    
+    <!-- H. Case Closure -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #38a169; padding-bottom: 10px;">H. Case Closure</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <strong style="color: #4a5568;">Current Status:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.get_status_display }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Case Closed Date:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.case_closed_date|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assessment Duration:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assessment_duration|default:"—" }} days</p>
+            </div>
+        </div>
+        {% if audit_case.status != 'closed' %}
+        <a href="{% url 'admin:audit_refund_auditcase_change' audit_case.id %}" style="background: #38a169; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px;">Close Case</a>
+        {% else %}
+        <p style="color: #38a169; font-weight: bold; margin-top: 15px;">This case is closed.</p>
+        {% endif %}
+    </div>
+    
+    <!-- I. Audit Trail -->
+    <div style="background: #fff; padding: 25px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h2 style="color: #2c5282; margin: 0 0 20px 0; border-bottom: 2px solid #667eea; padding-bottom: 10px;">I. Audit Trail</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <strong style="color: #4a5568;">Created At:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.created_at }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Last Updated:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.updated_at }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assigned By:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assigned_by.get_full_name|default:"—" }}</p>
+            </div>
+            <div>
+                <strong style="color: #4a5568;">Assigned Date:</strong>
+                <p style="margin: 5px 0 0 0; color: #2d3748;">{{ audit_case.assigned_date|default:"—" }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back Button -->
+    <div style="margin-top: 30px;">
+        <a href="{% url 'audit_refund:audit_dashboard' %}" style="background: #667eea; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: bold;">← Back to Audit Dashboard</a>
+    </div>
+</div>
+{% endblock %}

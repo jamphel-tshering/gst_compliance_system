@@ -1,0 +1,68 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label='compliance' %}">Compliance & Enforcement</a>
+    &rsaquo; <a href="{% url 'admin:compliance_complianceriskreferral_changelist' %}">Compliance Risk & Referral</a>
+    &rsaquo; Period-Based Risk Assessment
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Period-Based Risk Assessment</h1>
+    
+    <div style="max-width: 600px; margin: 20px 0; padding: 20px; background-color: #f8f8f8; border-radius: 4px; border: 1px solid #ddd;">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    From Tax Period:
+                </label>
+                <select name="from_period" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="">Select From Period</option>
+                    {% for period in tax_periods %}
+                        <option value="{{ period }}">{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">
+                    To Tax Period:
+                </label>
+                <select name="to_period" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="">Select To Period</option>
+                    {% for period in tax_periods %}
+                        <option value="{{ period }}">{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <button type="submit" style="background-color: #417690; color: white; padding: 12px 20px; border-radius: 4px; border: none; cursor: pointer; font-size: 14px; font-weight: bold;">
+                    Run Risk Assessment
+                </button>
+                <a href="{% url 'admin:compliance_complianceriskreferral_changelist' %}" style="margin-left: 10px; color: #417690; text-decoration: none;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <div style="margin-top: 20px; padding: 15px; background-color: #e8f4f8; border-radius: 4px; border: 1px solid #b8d4e8;">
+        <h3 style="margin-top: 0; color: #2c5282;">Instructions:</h3>
+        <ol style="color: #2c5282;">
+            <li>Select the <strong>From Tax Period</strong> (start of assessment period)</li>
+            <li>Select the <strong>To Tax Period</strong> (end of assessment period)</li>
+            <li>Click <strong>Run Risk Assessment</strong> to start the evaluation</li>
+            <li>The system will assess only GST returns within the selected period range</li>
+            <li>Results will be displayed in the Compliance Risk & Referral list</li>
+        </ol>
+        <p style="color: #2c5282; margin-bottom: 0;"><strong>Note:</strong> Historical data is only used for pattern recognition (e.g., sales variation, consecutive negative returns) and not for separate assessments.</p>
+    </div>
+</div>
+{% endblock %}

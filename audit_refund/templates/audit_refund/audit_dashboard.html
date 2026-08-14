@@ -1,0 +1,179 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto; padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h1 style="color: #2c5282; margin: 0;">Audit Dashboard</h1>
+        <a href="{% url 'audit_refund:auto_create_audit_cases' %}" style="background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Auto-Create Audit Cases</a>
+    </div>
+    
+    <!-- Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">
+            <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Total Audit Cases</h3>
+            <p style="margin: 0; color: #2c5282; font-size: 24px; font-weight: bold;">{{ total_cases }}</p>
+        </div>
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #ed8936;">
+            <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Pending Assignment</h3>
+            <p style="margin: 0; color: #ed8936; font-size: 24px; font-weight: bold;">{{ pending_assignment }}</p>
+        </div>
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #48bb78;">
+            <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Assigned</h3>
+            <p style="margin: 0; color: #48bb78; font-size: 24px; font-weight: bold;">{{ assigned }}</p>
+        </div>
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #4299e1;">
+            <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">In Progress</h3>
+            <p style="margin: 0; color: #4299e1; font-size: 24px; font-weight: bold;">{{ in_progress }}</p>
+        </div>
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #805ad5;">
+            <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Completed</h3>
+            <p style="margin: 0; color: #805ad5; font-size: 24px; font-weight: bold;">{{ completed }}</p>
+        </div>
+        <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #38a169;">
+            <h3 style="margin: 0 0 10px 0; color: #4a5568; font-size: 14px;">Closed</h3>
+            <p style="margin: 0; color: #38a169; font-size: 24px; font-weight: bold;">{{ closed }}</p>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0;">
+        <h3 style="margin: 0 0 20px 0; color: #2c5282;">Filters</h3>
+        <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #4a5568; font-size: 14px;">From Period</label>
+                <select name="from_period" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                    <option value="">All Periods</option>
+                    {% for period in available_periods %}
+                    <option value="{{ period }}" {% if filters.from_period == period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #4a5568; font-size: 14px;">To Period</label>
+                <select name="to_period" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                    <option value="">All Periods</option>
+                    {% for period in available_periods %}
+                    <option value="{{ period }}" {% if filters.to_period == period %}selected{% endif %}>{{ period }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #4a5568; font-size: 14px;">Risk Level</label>
+                <select name="risk_level" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                    <option value="">All Levels</option>
+                    <option value="Critical" {% if filters.risk_level == 'Critical' %}selected{% endif %}>Critical</option>
+                    <option value="High" {% if filters.risk_level == 'High' %}selected{% endif %}>High</option>
+                    <option value="Medium" {% if filters.risk_level == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="Low" {% if filters.risk_level == 'Low' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #4a5568; font-size: 14px;">Audit Officer</label>
+                <select name="audit_officer" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                    <option value="">All Officers</option>
+                    {% for officer in available_officers %}
+                    <option value="{{ officer.username }}" {% if filters.audit_officer == officer.username %}selected{% endif %}>{{ officer.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #4a5568; font-size: 14px;">Status</label>
+                <select name="status" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                    <option value="">All Status</option>
+                    <option value="referred" {% if filters.status == 'referred' %}selected{% endif %}>Referred</option>
+                    <option value="pending_assignment" {% if filters.status == 'pending_assignment' %}selected{% endif %}>Pending Assignment</option>
+                    <option value="assigned" {% if filters.status == 'assigned' %}selected{% endif %}>Assigned</option>
+                    <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="closed" {% if filters.status == 'closed' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px; color: #4a5568; font-size: 14px;">Dzongkhag</label>
+                <select name="dzongkhag" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                    <option value="">All Dzongkhags</option>
+                    {% for dzongkhag in available_dzongkhags %}
+                    <option value="{{ dzongkhag }}" {% if filters.dzongkhag == dzongkhag %}selected{% endif %}>{{ dzongkhag }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <button type="submit" style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Apply Filters</button>
+                <a href="{% url 'audit_refund:audit_dashboard' %}" style="margin-left: 10px; color: #667eea; text-decoration: none;">Clear</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Audit Case List -->
+    <div style="background: #fff; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f7fafc;">
+                <tr>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Audit Case ID</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk ID</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">From Period</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">To Period</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">GSTIN</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Taxpayer Name</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk Type</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk Indicator</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk Score</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Risk Level</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Audit Type</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Audit Officer</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Status</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Due Date</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #2c5282; font-weight: bold;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for case in recent_cases %}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 12px;">
+                        <a href="{% url 'audit_refund:audit_case_detail' case.id %}" style="color: #4299e1; text-decoration: none; font-weight: bold;">{{ case.audit_case_id }}</a>
+                    </td>
+                    <td style="padding: 12px;">{{ case.risk_referral.risk_id|default:"—" }}</td>
+                    <td style="padding: 12px;">{{ case.from_tax_period }}</td>
+                    <td style="padding: 12px;">{{ case.to_tax_period }}</td>
+                    <td style="padding: 12px;">{{ case.gstin }}</td>
+                    <td style="padding: 12px;">{{ case.taxpayer_name }}</td>
+                    <td style="padding: 12px;">{{ case.risk_referral.risk_type|default:"—" }}</td>
+                    <td style="padding: 12px;">{{ case.risk_referral.risk_indicator|default:"—" }}</td>
+                    <td style="padding: 12px;">{{ case.risk_referral.risk_score|default:"—" }}</td>
+                    <td style="padding: 12px;">
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; 
+                            {% if case.risk_referral.risk_level == 'Critical' %}background-color: #fff5f5; color: #c53030;
+                            {% elif case.risk_referral.risk_level == 'High' %}background-color: #fffaf0; color: #c05621;
+                            {% elif case.risk_referral.risk_level == 'Medium' %}background-color: #fffff0; color: #b7791f;
+                            {% else %}background-color: #f0fff4; color: #2f855a;{% endif %}">
+                            {{ case.risk_referral.risk_level|default:"—" }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px;">{{ case.get_assessment_type_display }}</td>
+                    <td style="padding: 12px;">{{ case.assigned_officer.get_full_name|default:"—" }}</td>
+                    <td style="padding: 12px;">{{ case.get_status_display }}</td>
+                    <td style="padding: 12px;">{{ case.due_date|default:"—" }}</td>
+                    <td style="padding: 12px;">
+                        <a href="{% url 'audit_refund:audit_case_detail' case.id %}" style="color: #4299e1; text-decoration: none; margin-right: 10px;">View</a>
+                        {% if case.status == 'referred' %}
+                        <a href="{% url 'admin:audit_refund_auditcase_change' case.id %}" style="color: #48bb78; text-decoration: none; margin-right: 10px;">Assign</a>
+                        {% endif %}
+                        {% if case.status == 'assigned' or case.status == 'in_progress' %}
+                        <a href="{% url 'admin:audit_refund_auditcase_change' case.id %}" style="color: #4299e1; text-decoration: none; margin-right: 10px;">Continue Assessment</a>
+                        {% endif %}
+                        {% if case.status == 'completed' %}
+                        <a href="{% url 'admin:audit_refund_auditcase_change' case.id %}" style="color: #38a169; text-decoration: none;">Close</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="15" style="padding: 20px; text-align: center; color: #718096;">No audit cases found</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

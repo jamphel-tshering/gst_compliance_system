@@ -1,0 +1,71 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h2>{{ title }}</h2>
+        <p>{{ subtitle }}</p>
+        
+        <!-- Dashboard Link -->
+        <div style="margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 10px 0; font-size: 18px;">📊 Report Dashboard</h3>
+            <p style="margin: 0 0 15px 0; opacity: 0.9; font-size: 14px;">Access all GST reports and analytics</p>
+            <a href="{{ dashboard_url }}" style="display: inline-block; padding: 10px 20px; background: white; color: #667eea; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Open Report Dashboard →
+            </a>
+        </div>
+        
+        <!-- Model Links -->
+        <div style="margin-top: 30px;">
+            <h3>📋 Model Management</h3>
+            <table style="margin-top: 15px;">
+                <thead>
+                    <tr>
+                        <th>Model name</th>
+                        <th>Add link</th>
+                        <th>Change or view list link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="model-row">
+                        <td><strong>Report Templates</strong></td>
+                        <td>
+                            <a href="{{ report_templates_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ report_templates_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                    <tr class="model-row">
+                        <td><strong>Generated Reports</strong></td>
+                        <td>
+                            <a href="{{ generated_reports_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ generated_reports_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                    <tr class="model-row">
+                        <td><strong>Report Schedules</strong></td>
+                        <td>
+                            <a href="{{ report_schedules_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ report_schedules_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                    <tr class="model-row">
+                        <td><strong>Dashboard Widgets</strong></td>
+                        <td>
+                            <a href="{{ dashboard_widgets_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ dashboard_widgets_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

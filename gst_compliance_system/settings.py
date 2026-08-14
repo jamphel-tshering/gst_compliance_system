@@ -14,6 +14,13 @@ from pathlib import Path
 import os
 import dj_database_url
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # python-dotenv not installed, will use system environment variables
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,17 +29,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-l^7sq$q+-+5+s&8tjy1p8ng=drd76jrld1g-iims30uo^6-zzv')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+# Add Render.com domain automatically if not present
+if 'ON_RENDER' in os.environ:
+    render_domain = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
+    if render_domain and render_domain not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(render_domain)
+        ALLOWED_HOSTS.append(f'.{render_domain}')
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jet',  # Django Jet Reboot - professional admin theme
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,25 +62,18 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     
-    # Local apps - explicit ordering
-    'core',              # Authentication (Core section)
-    'taxpayers',         # Taxpayer section
-    'returns',           # Return Section
-    'compliance',        # Compliance monitoring
-    'risk_assessment',   # Risk assessment
-    'refunds',           # Refund
-    'reporting',         # Reporting
+    # Local apps - ordered as requested for admin panel
+    'core',              # 1) Core (Authentication and Authorization)
+    'taxpayers',         # 2) Registration and Enquiry
+    'returns',           # 3) Returns
+    'compliance',        # 4) Compliance & Enforcement Module
+    'audit_refund',      # 5) Audit & Refund Module (includes Refund Register admin)
+    'reporting',         # 6) Reporting
+    'refunds',           # Data models only - added last but will be hidden from admin
 ]
 
-# Custom admin site configuration for app ordering
-from django.contrib.admin import AdminSite
-
-class GSTComplianceAdminSite(AdminSite):
-    site_header = 'GST Compliance System'
-    site_title = 'GST Compliance'
-    index_title = 'Dashboard'
-
-admin_site = GSTComplianceAdminSite(name='gst_admin')
+# Custom admin ordering without creating custom admin site
+# This will be applied in urls.py to avoid circular imports
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,6 +85,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.security_middleware.SecurityMiddleware',  # Custom security middleware
+    'core.security_middleware.PermissionMiddleware',  # Custom permission middleware
 ]
 
 ROOT_URLCONF = 'gst_compliance_system.urls'
@@ -84,7 +94,7 @@ ROOT_URLCONF = 'gst_compliance_system.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Add templates directory
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -113,6 +123,7 @@ if 'DATABASE_URL' in os.environ:
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
         conn_health_checks=True,
+        ssl_require=True,  # Require SSL for Render.com PostgreSQL
     )
 
 # Custom User Model
@@ -131,7 +142,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Temporarily allow unauthenticated access
+        'rest_framework.permissions.IsAuthenticated',  # Require authentication for all API endpoints
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100,
@@ -141,19 +152,10 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS Configuration
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    "http://localhost:3002",
-    "http://127.0.0.1:3002",
-    "http://localhost:3003",
-    "http://127.0.0.1:3003",
-]
+# CORS Configuration - RESTRICTED FOR SECURITY
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for development
+CORS_ALLOW_ALL_ORIGINS = False  # SECURITY: Disabled - only allow specific origins
 
 
 # Password validation
@@ -177,13 +179,19 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Thimphu'  # Bhutan time zone
 USE_I18N = True
-USE_TZ = True
+USE_TZ = False  # Disable timezone to avoid date conversion issues
 
-# Date formats - dd-mm-yyyy
+# Date formats - dd-mm-yyyy with leading zeros
 DATE_FORMAT = 'd-m-Y'
 DATETIME_FORMAT = 'd-m-Y H:i:s'
 SHORT_DATE_FORMAT = 'd-m-Y'
 SHORT_DATETIME_FORMAT = 'd-m-Y H:i:s'
+
+# Month-Year format for tax periods - Jan-2026 format
+MONTH_YEAR_FORMAT = 'M-Y'
+
+# Ensure all date fields use this format
+USE_L10N = False  # Disable localization to ensure consistent date formatting
 
 
 # Static files (CSS, JavaScript, Images)
@@ -224,6 +232,51 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Admin settings
 ADMIN_SHOW_FULL_RESULT_COUNT = True
+
+# Django Jet Reboot Configuration
+JET_DEFAULT_THEME = 'default'
+JET_THEMES = [
+    {
+        'theme': 'default',
+        'display_name': 'Default',
+        'user_switch_theme': True,
+        'copy': True,
+    },
+    {
+        'theme': 'green',
+        'display_name': 'Green',
+        'user_switch_theme': True,
+        'copy': True,
+    },
+    {
+        'theme': 'light-green',
+        'display_name': 'Light Green',
+        'user_switch_theme': True,
+        'copy': True,
+    },
+    {
+        'theme': 'light-violet',
+        'display_name': 'Light Violet',
+        'user_switch_theme': True,
+        'copy': True,
+    },
+    {
+        'theme': 'light-blue',
+        'display_name': 'Light Blue',
+        'user_switch_theme': True,
+        'copy': True,
+    },
+    {
+        'theme': 'light-gray',
+        'display_name': 'Light Gray',
+        'user_switch_theme': True,
+        'copy': True,
+    },
+]

@@ -1,0 +1,279 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .report-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+    
+    .back-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    
+    .report-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .report-header h1 {
+        margin: 0 0 10px 0;
+        font-size: 2em;
+    }
+    
+    .toolbar {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+    
+    .btn-excel { background: #217346; color: white; }
+    .btn-excel:hover { background: #1e6b3e; }
+    
+    .btn-pdf { background: #dc3545; color: white; }
+    .btn-pdf:hover { background: #c82333; }
+    
+    .btn-csv { background: #009688; color: white; }
+    .btn-csv:hover { background: #00796b; }
+    
+    .btn-print { background: #6c757d; color: white; }
+    .btn-print:hover { background: #5a6268; }
+    
+    .filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .filter-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .filter-form label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: bold;
+    }
+    
+    .filter-form input, .filter-form select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .filter-form button {
+        padding: 10px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .data-table thead {
+        background: #667eea;
+        color: white;
+    }
+    
+    .data-table th, .data-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .pagination a {
+        padding: 8px 16px;
+        background: #667eea;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    
+    .pagination .current {
+        padding: 8px 16px;
+        background: #5568d3;
+        color: white;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <a href="/reports/" class="back-button">← Back to Reports</a>
+    
+    <div class="report-header">
+        <h1>🆕 New Registration Report</h1>
+        <p>Generated: {{ generated_date }} by {{ generated_by }}</p>
+    </div>
+    
+    <div class="toolbar">
+        <button class="btn-excel" onclick="exportExcel()">📊 Export Excel</button>
+        <button class="btn-pdf" onclick="exportPDF()">📄 Export PDF</button>
+        <button class="btn-csv" onclick="exportCSV()">📋 Export CSV</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Print</button>
+    </div>
+    
+    <div class="filter-section">
+        <form method="GET" class="filter-form">
+            <div>
+                <label>From Date:</label>
+                <input type="date" name="from_date" value="{{ filters.from_date|default:'' }}">
+            </div>
+            <div>
+                <label>To Date:</label>
+                <input type="date" name="to_date" value="{{ filters.to_date|default:'' }}">
+            </div>
+            <div>
+                <label>Dzongkhag:</label>
+                <select name="dzongkhag">
+                    <option value="">All Dzongkhags</option>
+                    {% for dzongkhag in filter_options.dzongkhags %}
+                    <option value="{{ dzongkhag }}" {% if dzongkhag == filters.dzongkhag %}selected{% endif %}>{{ dzongkhag }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Sector:</label>
+                <select name="sector">
+                    <option value="">All Sectors</option>
+                    {% for sector in filter_options.sectors %}
+                    <option value="{{ sector }}" {% if sector == filters.sector %}selected{% endif %}>{{ sector }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label>Organisation Type:</label>
+                <select name="organisation_type">
+                    <option value="">All Types</option>
+                    {% for org_type in filter_options.organisation_types %}
+                    <option value="{{ org_type }}" {% if org_type == filters.organisation_type %}selected{% endif %}">{{ org_type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+    
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>GSTIN</th>
+                <th>Taxpayer Name</th>
+                <th>Business Name</th>
+                <th>Organisation Type</th>
+                <th>Sector</th>
+                <th>Dzongkhag</th>
+                <th>Registration Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for taxpayer in taxpayers %}
+            <tr>
+                <td><a href="/admin/taxpayers/taxpayermaster/{{ taxpayer.id }}/change/">{{ taxpayer.gstin }}</a></td>
+                <td>{{ taxpayer.taxpayer_name }}</td>
+                <td>{{ taxpayer.business_name|default:"-" }}</td>
+                <td>{{ taxpayer.organisation_type }}</td>
+                <td>{{ taxpayer.sector }}</td>
+                <td>{{ taxpayer.dzongkhag }}</td>
+                <td>{{ taxpayer.registration_date|date:"d-m-Y" }}</td>
+                <td>{{ taxpayer.status }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" style="text-align: center;">No new registrations found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="pagination">
+        {% if taxpayers.has_previous %}
+        <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">First</a>
+        <a href="?page={{ taxpayers.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+        {% endif %}
+        
+        <span class="current">Page {{ taxpayers.number }} of {{ taxpayers.paginator.num_pages }}</span>
+        
+        {% if taxpayers.has_next %}
+        <a href="?page={{ taxpayers.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+        <a href="?page={{ taxpayers.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last</a>
+        {% endif %}
+    </div>
+    
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <strong>Total Records:</strong> {{ taxpayers.paginator.count }}
+    </div>
+</div>
+
+<script>
+function exportExcel() {
+    window.location.href = '/reports/export/new_registrations/excel/';
+}
+
+function exportPDF() {
+    window.location.href = '/reports/export/new_registrations/pdf/';
+}
+
+function exportCSV() {
+    window.location.href = '/reports/export/new_registrations/csv/';
+}
+</script>
+{% endblock %}

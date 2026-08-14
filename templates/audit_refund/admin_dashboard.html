@@ -1,0 +1,117 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h2>{{ title }}</h2>
+        <p>{{ subtitle }}</p>
+        
+        <!-- Dashboard Links -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+            <div style="padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 18px;">🔍 Audit Dashboard</h3>
+                <p style="margin: 0 0 15px 0; opacity: 0.9; font-size: 14px;">Comprehensive audit case management and risk assessment</p>
+                <a href="/audit_refund/audit/" style="display: inline-block; padding: 10px 20px; background: white; color: #667eea; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                    Open Audit Dashboard →
+                </a>
+            </div>
+            
+            <div style="padding: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 10px 0; font-size: 18px;">💰 Refund Dashboard</h3>
+                <p style="margin: 0 0 15px 0; opacity: 0.9; font-size: 14px;">Refund processing and assessment system</p>
+                <a href="/audit_refund/refund/" style="display: inline-block; padding: 10px 20px; background: white; color: #f5576c; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                    Open Refund Dashboard →
+                </a>
+            </div>
+        </div>
+        
+        <!-- Model Links -->
+        <div style="margin-top: 30px;">
+            <h3>📋 Model Management</h3>
+            <table style="margin-top: 15px;">
+                <thead>
+                    <tr>
+                        <th>Model name</th>
+                        <th>Add link</th>
+                        <th>Change or view list link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="model-row">
+                        <td><strong>Audit Cases</strong></td>
+                        <td>
+                            <a href="{{ audit_cases_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ audit_cases_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                    <tr class="model-row">
+                        <td><strong>Audit Assessments</strong></td>
+                        <td>
+                            <a href="{{ audit_assessments_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ audit_assessments_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                    <tr class="model-row">
+                        <td><strong>Audit Findings</strong></td>
+                        <td>
+                            <a href="{{ audit_findings_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ audit_findings_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                    <tr class="model-row">
+                        <td><strong>Refund Registers</strong></td>
+                        <td>
+                            <a href="{{ refunds_url }}add/" class="addlink">Add</a>
+                        </td>
+                        <td>
+                            <a href="{{ refunds_url }}" class="changelink">Change</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>📊 Module Statistics</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div style="padding: 15px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+                    <h4 style="margin: 0 0 10px 0; color: #1976d2;">Audit Cases</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Total Cases: {{ total_audit_cases }}</li>
+                        <li>Pending Assignment: {{ pending_assignment }}</li>
+                        <li>Assigned: {{ assigned }}</li>
+                        <li>In Progress: {{ in_progress }}</li>
+                        <li>Completed: {{ completed }}</li>
+                        <li>Closed: {{ closed }}</li>
+                    </ul>
+                </div>
+                
+                <div style="padding: 15px; background-color: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+                    <h4 style="margin: 0 0 10px 0; color: #f57c00;">Refund Registers</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Total Refunds: {{ total_refunds }}</li>
+                        <li>Pending: {{ pending_refunds }}</li>
+                        <li>Under Review: {{ under_review_refunds }}</li>
+                        <li>Approved: {{ approved_refunds }}</li>
+                        <li>Rejected: {{ rejected_refunds }}</li>
+                        <li>Paid: {{ paid_refunds }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    a:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+</style>
+{% endblock %}

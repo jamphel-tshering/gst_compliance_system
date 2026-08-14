@@ -30,6 +30,23 @@ class TaxpayerMasterViewSet(viewsets.ModelViewSet):
         for dzongkhag in ['Mongar', 'Trashigang', 'Trashiyangtse', 'Lhuentse']:
             dzongkhag_data[dzongkhag] = self.queryset.filter(dzongkhag=dzongkhag).count()
         return Response(dzongkhag_data)
+    
+    @action(detail=False, methods=['get'])
+    def fetch_info(self, request):
+        """Fetch taxpayer information by GSTIN for auto-fill"""
+        gstin = request.query_params.get('gstin', '').strip()
+        try:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=gstin, is_primary_license=True).first()
+            if taxpayer:
+                return Response({
+                    'success': True,
+                    'taxpayer_name': taxpayer.taxpayer_name,
+                    'cid_company_reg_no': taxpayer.cid_company_reg_no
+                })
+            else:
+                return Response({'success': False, 'message': 'Taxpayer not found'})
+        except Exception as e:
+            return Response({'success': False, 'message': str(e)})
 
 
 class MultipleLicenseReferenceViewSet(viewsets.ModelViewSet):

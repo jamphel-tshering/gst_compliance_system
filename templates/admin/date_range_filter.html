@@ -1,0 +1,12 @@
+{% load i18n %}
+<div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+    <div>
+        <label>{{ form.start_date.label }}:</label>
+        {{ form.start_date }}
+    </div>
+    <div>
+        <label>{{ form.end_date.label }}:</label>
+        {{ form.end_date }}
+    </div>
+    <button type="submit" class="button">{% trans "Filter" %}</button>
+</div>

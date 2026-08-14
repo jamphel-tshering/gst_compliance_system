@@ -1,0 +1,92 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module">
+        <h2>{{ title }}</h2>
+        <p>{{ subtitle }}</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Model name</th>
+                    <th>Add link</th>
+                    <th>Change or view list link</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="model-row">
+                    <td><strong>Compliance & Enforcement</strong></td>
+                    <td>
+                        <a href="{{ compliance_monitoring_url }}add/" class="addlink">Add</a>
+                    </td>
+                    <td>
+                        <a href="{{ compliance_monitoring_url }}" class="changelink">Change</a>
+                    </td>
+                </tr>
+                <tr class="model-row">
+                    <td><strong>Compliance Risk & Referral</strong></td>
+                    <td>
+                        <a href="{{ compliance_risk_referral_url }}add/" class="addlink">Add</a>
+                    </td>
+                    <td>
+                        <a href="{{ compliance_risk_referral_url }}" class="changelink">Change</a>
+                    </td>
+                </tr>
+                <tr class="model-row">
+                    <td><strong>Enforcement & Recovery</strong></td>
+                    <td>
+                        <a href="{{ enforcement_recovery_url }}add/" class="addlink">Add</a>
+                    </td>
+                    <td>
+                        <a href="{{ enforcement_recovery_url }}" class="changelink">Change</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px;">
+            <h3 style="margin-top: 0;">🎯 Compliance Risk Assessment Dashboard</h3>
+            <p style="margin-bottom: 15px;">Period-based, risk-based audit selection engine for GST compliance.</p>
+            <a href="{{ risk_assessment_dashboard_url }}" class="button" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                Open Risk Assessment Dashboard
+            </a>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>📊 Module Statistics</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 15px;">
+                <div style="padding: 15px; background-color: #e3f2fd; border-radius: 8px; border-left: 4px solid #2196f3;">
+                    <h4 style="margin: 0 0 10px 0; color: #1976d2;">Compliance Monitoring</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Total Monitored: {{ total_monitored }}</li>
+                        <li>Compliant: {{ compliant_count }}</li>
+                        <li>Late Filers: {{ late_filer_count }}</li>
+                        <li>Non-Filers: {{ non_filer_count }}</li>
+                        <li>Payment Default: {{ payment_default_count }}</li>
+                    </ul>
+                </div>
+                
+                <div style="padding: 15px; background-color: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+                    <h4 style="margin: 0 0 10px 0; color: #f57c00;">Compliance Risk & Referral</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Total Risk Assessments: {{ total_risk_assessments }}</li>
+                        <li>Audit Selected: {{ audit_selected }}</li>
+                        <li>Review Selected: {{ review_selected }}</li>
+                        <li>Monitor Selected: {{ monitor_selected }}</li>
+                    </ul>
+                </div>
+                
+                <div style="padding: 15px; background-color: #e8f5e9; border-radius: 8px; border-left: 4px solid #4caf50;">
+                    <h4 style="margin: 0 0 10px 0; color: #388e3c;">Enforcement & Recovery</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Total Cases: {{ total_enforcement_cases }}</li>
+                        <li>Open Cases: {{ open_cases }}</li>
+                        <li>Recovered Cases: {{ recovered_cases }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

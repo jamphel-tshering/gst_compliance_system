@@ -1,6 +1,49 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, AuditLog, SystemSettings
+from django.shortcuts import render
+from django.urls import reverse
+from django.contrib.admin import AdminSite
+
+
+# Main Dashboard View
+def main_dashboard(request):
+    """Main dashboard with links to all module dashboards"""
+    dashboard_links = [
+        {
+            'title': 'GST Reports',
+            'url': '/reports/',
+            'description': 'Centralized Reporting and Analytics Layer',
+            'icon': '📊'
+        },
+        {
+            'title': 'Compliance & Enforcement Dashboard',
+            'url': '/compliance/compliance_risk_dashboard/',
+            'description': 'Compliance monitoring, risk assessment, and enforcement',
+            'icon': '✅'
+        },
+        {
+            'title': 'Audit & Refund Dashboard',
+            'url': '/audit_refund/audit/',
+            'description': 'Audit case management and refund processing',
+            'icon': '🔍'
+        },
+        {
+            'title': 'Refund Assessment Dashboard',
+            'url': '/audit_refund/refund/',
+            'description': 'Refund processing and assessment system',
+            'icon': '💰'
+        },
+    ]
+    
+    context = {
+        'title': 'RRCO/GST Mongar Administration',
+        'subtitle': 'Main Dashboard',
+        'dashboard_links': dashboard_links,
+    }
+    
+    return render(request, 'core/main_dashboard.html', context)
+
 
 # Use default admin site for core to avoid circular import
 @admin.register(User)
@@ -13,7 +56,51 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'email', 'password')}),
         ('Personal Info', {'fields': ('first_name', 'last_name', 'phone', 'department', 'employee_id')}),
-        ('Role & Permissions', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Role & Status', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Taxpayer Module Access', {
+            'fields': ('can_view_taxpayers', 'can_add_taxpayers', 'can_edit_taxpayers', 'can_delete_taxpayers'),
+            'classes': ('collapse',)
+        }),
+        ('GST Returns Module Access', {
+            'fields': ('can_view_returns', 'can_add_returns', 'can_edit_returns', 'can_delete_returns'),
+            'classes': ('collapse',)
+        }),
+        ('Refunds Module Access', {
+            'fields': ('can_view_refunds', 'can_add_refunds', 'can_edit_refunds', 'can_delete_refunds'),
+            'classes': ('collapse',)
+        }),
+        ('Compliance Module Access', {
+            'fields': ('can_view_compliance', 'can_add_compliance', 'can_edit_compliance', 'can_delete_compliance'),
+            'classes': ('collapse',)
+        }),
+        ('Risk Assessment Module Access', {
+            'fields': ('can_view_risk_assessment', 'can_run_risk_assessment', 'can_edit_risk_assessment', 'can_approve_risk_assessment'),
+            'classes': ('collapse',)
+        }),
+        ('Enforcement & Recovery Module Access', {
+            'fields': ('can_view_enforcement', 'can_add_enforcement', 'can_edit_enforcement', 'can_delete_enforcement'),
+            'classes': ('collapse',)
+        }),
+        ('Audit Module Access', {
+            'fields': ('can_view_audit', 'can_create_audit', 'can_edit_audit', 'can_approve_audit'),
+            'classes': ('collapse',)
+        }),
+        ('Reports Module Access', {
+            'fields': ('can_view_reports', 'can_generate_reports', 'can_export_reports'),
+            'classes': ('collapse',)
+        }),
+        ('User Management Access', {
+            'fields': ('can_view_users', 'can_add_users', 'can_edit_users', 'can_delete_users', 'can_manage_permissions'),
+            'classes': ('collapse',)
+        }),
+        ('System Settings Access', {
+            'fields': ('can_view_settings', 'can_edit_settings'),
+            'classes': ('collapse',)
+        }),
+        ('Data Import/Export Access', {
+            'fields': ('can_import_data', 'can_export_data'),
+            'classes': ('collapse',)
+        }),
         ('Important Dates', {'fields': ('last_login', 'date_joined', 'last_password_change')}),
     )
     
