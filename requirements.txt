@@ -1,4 +1,4 @@
-Django==6.1
+Django==4.2
 django-crispy-forms==2.7
 django-import-export==4.4.1
 openpyxl==3.1.5
@@ -8,5 +8,8 @@ psycopg2-binary==2.9.9
 dj-database-url==2.1.0
 whitenoise==6.6.0
 python-dotenv==1.0.0
+djangorestframework==3.14.0
+django-cors-headers==4.0.0
+django-filter==23.2
 # PostgreSQL client library for Render.com deployment
 psycopg2-binary==2.9.9
