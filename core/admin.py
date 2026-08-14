@@ -59,61 +59,20 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ['email', 'username', 'first_name', 'last_name']
     ordering = ['-created_at']
     
-    fieldsets = (
-        (None, {'fields': ('username', 'email', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'phone', 'department', 'employee_id')}),
-        ('Role & Status', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Taxpayer Module Access', {
-            'fields': ('can_view_taxpayers', 'can_add_taxpayers', 'can_edit_taxpayers', 'can_delete_taxpayers'),
-            'classes': ('collapse',)
-        }),
-        ('GST Returns Module Access', {
-            'fields': ('can_view_returns', 'can_add_returns', 'can_edit_returns', 'can_delete_returns'),
-            'classes': ('collapse',)
-        }),
-        ('Refunds Module Access', {
-            'fields': ('can_view_refunds', 'can_add_refunds', 'can_edit_refunds', 'can_delete_refunds'),
-            'classes': ('collapse',)
-        }),
-        ('Compliance Module Access', {
-            'fields': ('can_view_compliance', 'can_add_compliance', 'can_edit_compliance', 'can_delete_compliance'),
-            'classes': ('collapse',)
-        }),
-        ('Risk Assessment Module Access', {
-            'fields': ('can_view_risk_assessment', 'can_run_risk_assessment', 'can_edit_risk_assessment', 'can_approve_risk_assessment'),
-            'classes': ('collapse',)
-        }),
-        ('Enforcement & Recovery Module Access', {
-            'fields': ('can_view_enforcement', 'can_add_enforcement', 'can_edit_enforcement', 'can_delete_enforcement'),
-            'classes': ('collapse',)
-        }),
-        ('Audit Module Access', {
-            'fields': ('can_view_audit', 'can_create_audit', 'can_edit_audit', 'can_approve_audit'),
-            'classes': ('collapse',)
-        }),
-        ('Reports Module Access', {
-            'fields': ('can_view_reports', 'can_generate_reports', 'can_export_reports'),
-            'classes': ('collapse',)
-        }),
-        ('User Management Access', {
-            'fields': ('can_view_users', 'can_add_users', 'can_edit_users', 'can_delete_users', 'can_manage_permissions'),
-            'classes': ('collapse',)
-        }),
-        ('System Settings Access', {
-            'fields': ('can_view_settings', 'can_edit_settings'),
-            'classes': ('collapse',)
-        }),
-        ('Data Import/Export Access', {
-            'fields': ('can_import_data', 'can_export_data'),
-            'classes': ('collapse',)
-        }),
-        ('Important Dates', {'fields': ('last_login', 'date_joined', 'last_password_change')}),
-    )
+    # Allow all users to view and add users for basic functionality
+    def has_add_permission(self, request):
+        return True
+    
+    def has_change_permission(self, request, obj=None):
+        return True
+    
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
     
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'role', 'password1', 'password2'),
+            'fields': ('username', 'email', 'password1', 'password2'),
         }),
     )
 
@@ -137,24 +96,6 @@ class AuditLogAdmin(admin.ModelAdmin):
 class SystemSettingsAdmin(admin.ModelAdmin):
     list_display = ['system_name', 'organization_name', 'contact_email', 'updated_at', 'updated_by']
     search_fields = ['system_name', 'organization_name', 'contact_email']
-    fieldsets = (
-        ('General Information', {
-            'fields': ('system_name', 'organization_name')
-        }),
-        ('Contact Information', {
-            'fields': ('contact_email', 'contact_phone', 'contact_address')
-        }),
-        ('Notification Settings', {
-            'fields': ('send_email_notifications', 'email_smtp_server', 'email_smtp_port')
-        }),
-        ('Report Settings', {
-            'fields': ('report_logo_url', 'report_footer_text')
-        }),
-        ('System Information', {
-            'fields': ('updated_at', 'updated_by'),
-            'classes': ('collapse',)
-        }),
-    )
     readonly_fields = ['updated_at', 'updated_by']
     
     def has_add_permission(self, request):
