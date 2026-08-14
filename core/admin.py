@@ -11,28 +11,34 @@ def main_dashboard(request):
     """Main dashboard with links to all module dashboards"""
     dashboard_links = [
         {
-            'title': 'GST Reports',
-            'url': '/reports/',
-            'description': 'Centralized Reporting and Analytics Layer',
-            'icon': '📊'
+            'title': 'Taxpayer Management',
+            'url': '/taxpayers/',
+            'description': 'Manage taxpayer registration and profiles',
+            'icon': '👥'
         },
         {
-            'title': 'Compliance & Enforcement Dashboard',
-            'url': '/compliance/compliance_risk_dashboard/',
+            'title': 'GST Returns',
+            'url': '/returns/',
+            'description': 'Process and monitor GST returns',
+            'icon': '�'
+        },
+        {
+            'title': 'Compliance Monitoring',
+            'url': '/compliance/',
             'description': 'Compliance monitoring, risk assessment, and enforcement',
             'icon': '✅'
         },
         {
-            'title': 'Audit & Refund Dashboard',
-            'url': '/audit_refund/audit/',
+            'title': 'Audit & Refund',
+            'url': '/audit_refund/',
             'description': 'Audit case management and refund processing',
             'icon': '🔍'
         },
         {
-            'title': 'Refund Assessment Dashboard',
-            'url': '/audit_refund/refund/',
-            'description': 'Refund processing and assessment system',
-            'icon': '💰'
+            'title': 'Reporting',
+            'url': '/reporting/',
+            'description': 'Centralized Reporting and Analytics Layer',
+            'icon': '�'
         },
     ]
     
