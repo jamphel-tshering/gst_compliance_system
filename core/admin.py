@@ -20,7 +20,7 @@ def main_dashboard(request):
             'title': 'GST Returns',
             'url': '/returns/',
             'description': 'Process and monitor GST returns',
-            'icon': '�'
+            'icon': '📋'
         },
         {
             'title': 'Compliance Monitoring',
@@ -38,7 +38,7 @@ def main_dashboard(request):
             'title': 'Reporting',
             'url': '/reporting/',
             'description': 'Centralized Reporting and Analytics Layer',
-            'icon': '�'
+            'icon': '📊'
         },
     ]
     
