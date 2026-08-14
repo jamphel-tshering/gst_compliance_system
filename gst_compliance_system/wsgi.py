@@ -38,5 +38,22 @@ try:
 except Exception as e:
     print(f"User creation error: {e}")
 
+# Weekly backup on Render.com
+import datetime
+current_day = datetime.datetime.now().strftime('%A')
+if current_day == 'Sunday':  # Run backup every Sunday
+    try:
+        import shutil
+        backup_dir = '/opt/render/project/backups'
+        db_path = '/opt/render/project/src/db.sqlite3'
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_file = f'{backup_dir}/gst_compliance_backup_{timestamp}.db'
+        
+        os.makedirs(backup_dir, exist_ok=True)
+        shutil.copy2(db_path, backup_file)
+        print(f"Weekly backup created: {backup_file}")
+    except Exception as e:
+        print(f"Backup error: {e}")
+
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
