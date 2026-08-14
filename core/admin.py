@@ -12,31 +12,31 @@ def main_dashboard(request):
     dashboard_links = [
         {
             'title': 'Taxpayer Management',
-            'url': '/taxpayers/',
+            'url': '/admin/taxpayers/taxpayermaster/',
             'description': 'Manage taxpayer registration and profiles',
             'icon': '👥'
         },
         {
             'title': 'GST Returns',
-            'url': '/returns/',
+            'url': '/admin/returns/gstreturn/',
             'description': 'Process and monitor GST returns',
             'icon': '📋'
         },
         {
             'title': 'Compliance Monitoring',
-            'url': '/compliance/',
+            'url': '/admin/compliance/compliancemonitoring/',
             'description': 'Compliance monitoring, risk assessment, and enforcement',
             'icon': '✅'
         },
         {
             'title': 'Audit & Refund',
-            'url': '/audit_refund/',
+            'url': '/admin/audit_refund/auditcase/',
             'description': 'Audit case management and refund processing',
             'icon': '🔍'
         },
         {
             'title': 'Reporting',
-            'url': '/reporting/',
+            'url': '/admin/reporting/reporttemplate/',
             'description': 'Centralized Reporting and Analytics Layer',
             'icon': '📊'
         },
