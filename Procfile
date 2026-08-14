@@ -1,1 +1,1 @@
-web: sh -c "python manage.py migrate --noinput && gunicorn gst_compliance_system.wsgi:application"
+web: bash start.sh
