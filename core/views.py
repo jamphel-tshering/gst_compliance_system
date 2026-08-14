@@ -15,7 +15,7 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             messages.success(request, f'Welcome back, {user.get_full_name()}!')
-            return redirect('dashboard')
+            return redirect('/admin/dashboard/')
     else:
         form = AuthenticationForm()
     
