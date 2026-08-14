@@ -1,1 +1,1 @@
-web: bash start.sh
+web: gunicorn gst_compliance_system.wsgi:application
