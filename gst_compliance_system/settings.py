@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
 
 # Load environment variables from .env file
 try:
@@ -29,12 +28,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-#k9q!2@f$8m@z^x#v7b$n5c%q3w@e$r6t*y8u&i0o')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['*']
 
 # Add Render.com domain automatically if not present
 if 'ON_RENDER' in os.environ:
@@ -47,7 +46,6 @@ if 'ON_RENDER' in os.environ:
 # Application definition
 
 INSTALLED_APPS = [
-    'jet',  # Django Jet Reboot - professional admin theme
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -116,15 +114,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# PostgreSQL configuration for Render.com
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=True,  # Require SSL for Render.com PostgreSQL
-    )
 
 # Custom User Model
 AUTH_USER_MODEL = 'core.User'

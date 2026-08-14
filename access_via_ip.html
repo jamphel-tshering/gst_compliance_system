@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GST Compliance System - IP Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 600px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        .note {
+            color: #666;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .ip-address {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GST Compliance System</h1>
+        <p class="ip-address">Your IP: 192.168.0.102</p>
+        <a href="http://192.168.0.102:8888" class="button">Open Main System</a>
+        <a href="http://192.168.0.102:8888/admin/" class="button">Open Admin Panel</a>
+        <p class="note">
+            <strong>Note:</strong> Accessing via IP address may bypass SSL issues.
+            Make sure your firewall allows connections on port 8888.
+        </p>
+    </div>
+</body>
+</html>

@@ -83,7 +83,6 @@ admin.site.site_header = "RRCO/GST Mongar Administration"
 admin.site.index_title = "Welcome to RRCO/GST Mongar Administration"
 
 urlpatterns = [
-    path('jet/', include('jet.urls', 'jet')),  # Jet theme
     path('admin/dashboard/', main_dashboard, name='main_dashboard'),  # Main Dashboard - BEFORE admin routes
     path('admin/', admin.site.urls),
     path('admin/compliance/', compliance_enforcement_dashboard),  # Compliance & Enforcement dashboard
