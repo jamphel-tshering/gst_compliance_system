@@ -1,1 +1,1 @@
-web: gunicorn gst_compliance_system.wsgi:application
+web: python manage.py migrate --noinput && gunicorn gst_compliance_system.wsgi:application
