@@ -183,7 +183,6 @@ def get_display_value(obj, field_name):
 class TaxpayerMasterAdmin(ImportExportModelAdmin):
     resource_class = TaxpayerMasterResource
     form = TaxpayerMasterForm
-    change_list_template = 'taxpayers/change_list.html'
     list_display = ['gstin', 'taxpayer_name', 'business_name', 'organisation_type', 'status', 'display_dzongkhag', 'frequency', 'display_registration_date']
     list_display_links = ['gstin', 'taxpayer_name']  # Allow clicking on GSTIN or name to edit
     list_per_page = 20  # Show 20 records per page with pagination
@@ -268,146 +267,8 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
         super().save_model(request, obj, form, change)
     
     def changelist_view(self, request, extra_context=None):
-        """Add summary statistics to the changelist view with date filtering"""
-        extra_context = extra_context or {}
-        
-        # Get the queryset that Django Admin will use (includes our custom filtering)
-        queryset = self.get_queryset(request)
-        
-        # Apply date filtering to the queryset used for KPIs (same logic as get_queryset)
-        start_date = request.GET.get('reg_start_date')
-        end_date = request.GET.get('reg_end_date')
-        
-        if start_date:
-            try:
-                from datetime import datetime
-                start_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
-                queryset = queryset.filter(registration_date__gte=start_obj)
-            except:
-                pass
-        
-        if end_date:
-            try:
-                from datetime import datetime
-                end_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
-                queryset = queryset.filter(registration_date__lte=end_obj)
-            except:
-                pass
-        
-        # Get summary statistics from filtered queryset
-        total_active = queryset.filter(status='Active').count()
-        total_deregistered = queryset.filter(status='Deregistered').count()
-        
-        # Frequency breakdown with both active and deregistered counts
-        frequency_counts = {}
-        for frequency in ['Monthly', 'Quarterly', 'Half Yearly']:
-            active_count = queryset.filter(frequency=frequency, status='Active').count()
-            dereg_count = queryset.filter(frequency=frequency, status='Deregistered').count()
-            if active_count > 0 or dereg_count > 0:
-                frequency_counts[frequency] = {'active': active_count, 'deregistered': dereg_count}
-        
-        # Organisation type breakdown with both active and deregistered counts
-        org_type_counts = {}
-        for org_type in ['Sole Proprietorship', 'Private Company', 'Public Company', 'Partnership', 'Government Entity', 'Foreign Company', 'Joint Venture', 'State Owned Company', 'Other']:
-            active_count = queryset.filter(organisation_type=org_type, status='Active').count()
-            dereg_count = queryset.filter(organisation_type=org_type, status='Deregistered').count()
-            if active_count > 0 or dereg_count > 0:
-                org_type_counts[org_type] = {'active': active_count, 'deregistered': dereg_count}
-        
-        # Dzongkhag breakdown with both active and deregistered counts
-        dzongkhag_counts = {}
-        for dzongkhag in ['Mongar', 'Trashigang', 'Trashiyangtse', 'Lhuentse']:
-            active_count = queryset.filter(dzongkhag=dzongkhag, status='Active').count()
-            dereg_count = queryset.filter(dzongkhag=dzongkhag, status='Deregistered').count()
-            if active_count > 0 or dereg_count > 0:
-                dzongkhag_counts[dzongkhag] = {'active': active_count, 'deregistered': dereg_count}
-        
-        # Add filter info to summary title if dates are selected
-        filter_info = ""
-        if start_date or end_date:
-            from datetime import datetime
-            if start_date:
-                try:
-                    start_formatted = datetime.strptime(start_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-                    filter_info += f"From {start_formatted}"
-                except:
-                    filter_info += f"From {start_date}"
-            if end_date:
-                try:
-                    end_formatted = datetime.strptime(end_date, '%Y-%m-%d').strftime('%d-%m-%Y')
-                    filter_info += f" To {end_formatted}"
-                except:
-                    filter_info += f" To {end_date}"
-        
-        # Create HTML for summary panel (compact version with frequency breakdown)
-        summary_title = f"Taxpayers Summary{f' ({filter_info})' if filter_info else ''}"
-        summary_html = f"""
-        <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 12px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
-            <div style="font-size: 14px; font-weight: bold; color: #333; margin-bottom: 10px; border-bottom: 1px solid #007bff; padding-bottom: 5px;">
-                {summary_title}
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                <div style="background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007bff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;">
-                    <div style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #28a745;">👥</div>
-                    <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">Total Active</div>
-                    <div style="font-size: 18px; font-weight: bold; color: #28a745;">{total_active}</div>
-                    <div style="font-size: 10px; color: #666; margin-top: 3px;">
-                        Monthly: {frequency_counts.get('Monthly', {}).get('active', 0)} | 
-                        Quarterly: {frequency_counts.get('Quarterly', {}).get('active', 0)} | 
-                        Half Yearly: {frequency_counts.get('Half Yearly', {}).get('active', 0)}
-                    </div>
-                </div>
-                <div style="background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007bff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;">
-                    <div style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #dc3545;">🚫</div>
-                    <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">Total Deregistered</div>
-                    <div style="font-size: 18px; font-weight: bold; color: #dc3545;">{total_deregistered}</div>
-                    <div style="font-size: 10px; color: #666; margin-top: 3px;">
-                        Monthly: {frequency_counts.get('Monthly', {}).get('deregistered', 0)} | 
-                        Quarterly: {frequency_counts.get('Quarterly', {}).get('deregistered', 0)} | 
-                        Half Yearly: {frequency_counts.get('Half Yearly', {}).get('deregistered', 0)}
-                    </div>
-                </div>
-                <div style="background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007bff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;">
-                    <div style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #007bff;">🏢</div>
-                    <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">By Organisation Type</div>
-        """
-        
-        for org_type, counts in org_type_counts.items():
-            dereg_display = f"| {counts['deregistered']}" if counts['deregistered'] > 0 else ""
-            summary_html += f"""
-                    <div style="font-size: 12px; color: #555; margin: 3px 0; display: flex; justify-content: space-between;">
-                        <span>{org_type}</span>
-                        <span style="font-weight: bold; color: #007bff;"><span style="color: #28a745;">{counts['active']}</span> {dereg_display}</span>
-                    </div>
-            """
-        
-        summary_html += """
-                </div>
-                <div style="background: white; padding: 10px; border-radius: 4px; border-left: 3px solid #007bff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;">
-                    <div style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #007bff;">📍</div>
-                    <div style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">By Dzongkhag</div>
-        """
-        
-        for dzongkhag, counts in dzongkhag_counts.items():
-            dereg_display = f"| {counts['deregistered']}" if counts['deregistered'] > 0 else ""
-            summary_html += f"""
-                    <div style="font-size: 12px; color: #555; margin: 3px 0; display: flex; justify-content: space-between;">
-                        <span>{dzongkhag}</span>
-                        <span style="font-weight: bold; color: #007bff;"><span style="color: #28a745;">{counts['active']}</span> {dereg_display}</span>
-                    </div>
-            """
-        
-        summary_html += """
-                </div>
-            </div>
-        </div>
-        """
-        
-        extra_context.update({
-            'summary_html': summary_html,
-        })
-        
-        return super().changelist_view(request, extra_context=extra_context)
+        """Override to avoid template context issues"""
+        return super().changelist_view(request, extra_context)
 
 
 @admin.register(MultipleLicenseReference)
