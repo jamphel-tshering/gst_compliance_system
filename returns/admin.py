@@ -105,6 +105,10 @@ def get_display_value(obj, field_name):
 @admin.register(GSTReturn)
 class GSTReturnAdmin(admin.ModelAdmin):
     form = GSTReturnForm
+    list_display = ['display_tax_period', 'gstin', 'taxpayer_name', 'dzongkhag', 'display_organisation_type', 'display_frequency', 'declared_sales', 'declared_domestic_purchase', 'declared_import_value', 'declared_import_gst', 'domestic_purchase_itc_claimed', 'total_itc_claimed', 'declared_output_gst', 'gst_payable_refundable', 'actual_gst_payment_received', 'display_return_due_date', 'display_return_filing_date', 'display_filing_status', 'display_payment_status', 'display_compliance_status', 'remarks']
+    list_filter = [TaxPeriodFilter, 'filing_status', 'payment_status', 'compliance_status', 'organisation_type', 'dzongkhag']
+    search_fields = ['gstin', 'taxpayer_name']
+    ordering = ['-tax_period', 'taxpayer_name']
     
     def save_model(self, request, obj, form, change):
         """Handle automations when saving GST return"""
@@ -143,10 +147,6 @@ class GSTReturnAdmin(admin.ModelAdmin):
         obj.gst_payable_refundable = calculations['gst_payable_refundable']
         
         super().save_model(request, obj, form, change)
-    list_display = ['display_tax_period', 'gstin', 'taxpayer_name', 'dzongkhag', 'display_organisation_type', 'display_frequency', 'declared_sales', 'declared_domestic_purchase', 'declared_import_value', 'declared_import_gst', 'domestic_purchase_itc_claimed', 'total_itc_claimed', 'declared_output_gst', 'gst_payable_refundable', 'actual_gst_payment_received', 'display_return_due_date', 'display_return_filing_date', 'display_filing_status', 'display_payment_status', 'display_compliance_status', 'remarks']
-    list_filter = [TaxPeriodFilter, 'filing_status', 'payment_status', 'compliance_status', 'organisation_type', 'dzongkhag']
-    search_fields = ['gstin', 'taxpayer_name']
-    ordering = ['-tax_period', 'taxpayer_name']
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
