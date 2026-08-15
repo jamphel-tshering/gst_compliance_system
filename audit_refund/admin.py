@@ -412,33 +412,6 @@ class AuditAssessmentAdmin(admin.ModelAdmin):
         
         super().save_model(request, obj, form, change)
     
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
-            kwargs['widget'] = CustomDateInput()
-        return super().formfield_for_dbfield(db_field, **kwargs)
-    
-    def save_model(self, request, obj, form, change):
-        # Convert date strings to display format if needed
-        date_fields = ['assessment_date', 'case_closed_date', 'assigned_date', 'due_date']
-        for field in date_fields:
-            date_value = getattr(obj, field, None)
-            if date_value and isinstance(date_value, str):
-                try:
-                    datetime.strptime(date_value, '%d-%m-%Y')
-                except ValueError:
-                    pass  # Keep as is if conversion fails
-        
-        # Auto-fetch taxpayer information if GSTIN provided
-        if obj.gstin and not obj.taxpayer_name:
-            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
-            if taxpayer:
-                obj.taxpayer_name = taxpayer.taxpayer_name
-                obj.dzongkhag = taxpayer.dzongkhag
-                obj.organisation_type = taxpayer.organisation_type
-                obj.frequency = taxpayer.frequency
-        
-        super().save_model(request, obj, form, change)
-    
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         
