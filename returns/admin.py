@@ -4,7 +4,6 @@ from django.contrib.admin import SimpleListFilter
 from datetime import datetime, date
 from .models import GSTReturn
 from core.form_widgets import CustomDateInput, TaxPeriodSelect
-from core.form_fields import CustomDateField
 from core.helper_functions import get_taxpayer_by_gstin, calculate_tax_period_due_date, calculate_filing_delay, calculate_gst_calculations
 
 
@@ -48,14 +47,40 @@ class GSTReturnForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        # Override date fields with custom date field for DD-MM-YYYY validation
+        # Remove Django's date validation by using text widgets
         if 'return_due_date' in self.fields:
-            self.fields['return_due_date'] = CustomDateField(required=False)
-            self.fields['return_due_date'].widget = CustomDateInput()
+            self.fields['return_due_date'].widget = forms.TextInput(attrs={
+                'type': 'text',
+                'placeholder': 'DD-MM-YYYY',
+                'pattern': r'\d{2}-\d{2}-\d{4}'
+            })
         
         if 'return_filing_date' in self.fields:
-            self.fields['return_filing_date'] = CustomDateField(required=False)
-            self.fields['return_filing_date'].widget = CustomDateInput()
+            self.fields['return_filing_date'].widget = forms.TextInput(attrs={
+                'type': 'text',
+                'placeholder': 'DD-MM-YYYY',
+                'pattern': r'\d{2}-\d{2}-\d{4}'
+            })
+    
+    def clean_return_due_date(self):
+        """Convert DD-MM-YYYY string to date object"""
+        date_str = self.cleaned_data.get('return_due_date')
+        if date_str:
+            try:
+                return datetime.strptime(date_str, '%d-%m-%Y').date()
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 20-02-2026)')
+        return None
+    
+    def clean_return_filing_date(self):
+        """Convert DD-MM-YYYY string to date object"""
+        date_str = self.cleaned_data.get('return_filing_date')
+        if date_str:
+            try:
+                return datetime.strptime(date_str, '%d-%m-%Y').date()
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return None
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
