@@ -25,7 +25,7 @@ class ComplianceMonitoring(models.Model):
     # Assessment Information
     compliance_id = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name='Compliance ID')
     tax_period = models.CharField(max_length=20, verbose_name='Tax Period')
-    assessment_date = models.DateField(auto_now_add=True, verbose_name='Assessment Date')
+    assessment_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Assessment Date')
     
     # Taxpayer Information (from GST Returns, not duplicated)
     gstin = models.CharField(max_length=15, verbose_name='GSTIN')
@@ -149,7 +149,7 @@ class ComplianceRiskReferral(models.Model):
     risk_id = models.CharField(max_length=20, unique=True, blank=True, null=True, verbose_name='Risk ID')
     assessment_from_period = models.CharField(max_length=20, verbose_name='Assessment From Period')
     assessment_to_period = models.CharField(max_length=20, verbose_name='Assessment To Period')
-    assessment_date = models.DateField(auto_now_add=True, verbose_name='Assessment Date')
+    assessment_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Assessment Date')
     assessment_status = models.CharField(max_length=30, blank=True, null=True, verbose_name='Assessment Status')
     assessor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assessed_risks', verbose_name='Assessor')
     
@@ -297,7 +297,7 @@ class EnforcementRecovery(models.Model):
     # Case Details
     case_type = models.CharField(max_length=20, choices=CASE_TYPE_CHOICES, blank=True, null=True, verbose_name='Case Type')
     amount_due = models.DecimalField(max_digits=15, decimal_places=2, default=0, verbose_name='Amount Due')
-    notice_date = models.DateField(null=True, blank=True, verbose_name='Notice Date')
+    notice_date = models.CharField(max_length=20, null=True, blank=True, verbose_name='Notice Date')
     
     # Action & Recovery
     action_taken = models.TextField(blank=True, null=True, verbose_name='Action Taken')

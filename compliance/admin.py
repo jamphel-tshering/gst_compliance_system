@@ -63,7 +63,7 @@ def compliance_enforcement_dashboard(request):
 
 
 class ComplianceMonitoringForm(forms.ModelForm):
-    """Custom form with date pickers"""
+    """Custom form with date pickers and automations"""
     class Meta:
         model = ComplianceMonitoring
         fields = '__all__'
@@ -104,9 +104,13 @@ class ComplianceMonitoringForm(forms.ModelForm):
             self.fields['tax_period'].required = True
             self.fields['tax_period'].empty_label = None
         
-        # Add date widget for assessment_date
+        # Add date widget for assessment_date with text input to avoid Django validation
         if 'assessment_date' in self.fields:
-            self.fields['assessment_date'].widget = CustomDateInput()
+            self.fields['assessment_date'].widget = forms.TextInput(attrs={
+                'type': 'text',
+                'placeholder': 'DD-MM-YYYY',
+                'pattern': r'\d{2}-\d{2}-\d{4}'
+            })
         
         # Add dropdown choices for filing status
         FILING_STATUS_CHOICES = [
@@ -133,6 +137,17 @@ class ComplianceMonitoringForm(forms.ModelForm):
             self.fields['payment_status'].choices = PAYMENT_STATUS_CHOICES
             self.fields['payment_status'].required = False
             self.fields['payment_status'].empty_label = None
+    
+    def clean_assessment_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('assessment_date')
+        if date_str:
+            try:
+                # Just validate the format, don't convert to date object
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
 
 
 @admin.register(ComplianceMonitoring)
@@ -147,12 +162,12 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     
     """Admin for Compliance & Enforcement - Simple table based on GST Returns"""
     form = ComplianceMonitoringForm
+    change_form_template = 'admin/compliance_change_form.html'
     list_display = ['compliance_id', 'tax_period', 'gstin', 'taxpayer_name', 'filing_status', 'filing_delay', 'payment_status', 'compliance_status', 'compliance_flag', 'remarks']
     list_display_links = ['compliance_id', 'gstin']
     list_filter = ['tax_period', 'filing_status', 'payment_status', 'compliance_status', 'compliance_flag']
     search_fields = ['compliance_id', 'gstin', 'taxpayer_name']
     list_per_page = 20
-    date_hierarchy = 'assessment_date'
     
 
     
@@ -251,6 +266,16 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     recalculate_compliance_status.short_description = 'Recalculate Compliance Status'
     
     def save_model(self, request, obj, form, change):
+        from datetime import datetime
+        
+        # Convert assessment date string to display format if needed
+        if obj.assessment_date and isinstance(obj.assessment_date, str):
+            try:
+                # Just validate the format, don't convert
+                datetime.strptime(obj.assessment_date, '%d-%m-%Y')
+            except ValueError:
+                pass  # Keep as is if conversion fails
+        
         if not change:  # If creating new record
             # Auto-fetch taxpayer information if GSTIN provided
             if obj.gstin and not obj.taxpayer_name:
@@ -518,7 +543,6 @@ class ComplianceRiskReferralAdmin(admin.ModelAdmin):
     list_filter = ['assessment_from_period', 'assessment_to_period', 'risk_type', 'risk_level', 'system_decision', 'final_selection', 'assessment_status', 'action_status']
     search_fields = ['risk_id', 'gstin', 'taxpayer_name', 'risk_indicator']
     list_per_page = 20
-    date_hierarchy = 'assessment_date'
     
     readonly_fields = ['risk_id', 'assessment_date', 'system_decision', 'selection', 'referred_to', 'prescribed_officer_action', 'original_risk_score', 'original_risk_level', 'original_selection', 'original_system_decision']
     
