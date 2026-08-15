@@ -8,5 +8,6 @@ django-cors-headers>=4.0
 django-filter>=23.0
 django-import-export>=4.0
 tablib>=3.5
+openpyxl>=3.1
 # PostgreSQL client library for Render.com deployment
 psycopg2-binary==2.9.9
