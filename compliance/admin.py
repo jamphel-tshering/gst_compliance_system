@@ -415,9 +415,13 @@ class ComplianceRiskReferralForm(forms.ModelForm):
             self.fields['tax_period'].required = True
             self.fields['tax_period'].empty_label = None
         
-        # Add date widget for assessment_date
+        # Add date widget for assessment_date with text input to avoid Django validation
         if 'assessment_date' in self.fields:
-            self.fields['assessment_date'].widget = CustomDateInput()
+            self.fields['assessment_date'].widget = forms.TextInput(attrs={
+                'type': 'text',
+                'placeholder': 'DD-MM-YYYY',
+                'pattern': r'\d{2}-\d{2}-\d{4}'
+            })
         
         # Add dropdown choices for filing status
         FILING_STATUS_CHOICES = [
@@ -454,6 +458,17 @@ class ComplianceRiskReferralForm(forms.ModelForm):
             self.fields['referred_to'].widget.attrs['readonly'] = True
         if 'prescribed_officer_action' in self.fields:
             self.fields['prescribed_officer_action'].widget.attrs['readonly'] = True
+    
+    def clean_assessment_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('assessment_date')
+        if date_str:
+            try:
+                # Just validate the format, don't convert to date object
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
     
     def clean_assessment_from_period(self):
         # Convert from Jan-2026 format back to database format (2026-01-01)
@@ -496,6 +511,7 @@ class ComplianceRiskReferralForm(forms.ModelForm):
 class ComplianceRiskReferralAdmin(admin.ModelAdmin):
     """Admin for Compliance Risk & Referral - Period-based risk assessment with officer judgment"""
     form = ComplianceRiskReferralForm
+    change_form_template = 'admin/compliance_risk_change_form.html'
     list_display = ['risk_id', 'formatted_assessment_from_period', 'gstin', 'taxpayer_name', 'risk_level', 'system_decision', 'assessor', 'assignment_status', 'final_selection']
     
 
@@ -504,6 +520,40 @@ class ComplianceRiskReferralAdmin(admin.ModelAdmin):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
             kwargs['widget'] = CustomDateInput()
         return super().formfield_for_dbfield(db_field, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        # Convert notice date string to display format if needed
+        if obj.notice_date and isinstance(obj.notice_date, str):
+            try:
+                # Just validate the format, don't convert
+                datetime.strptime(obj.notice_date, '%d-%m-%Y')
+            except ValueError:
+                pass  # Keep as is if conversion fails
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+        
+        super().save_model(request, obj, form, change)
+    
+    def save_model(self, request, obj, form, change):
+        # Convert assessment date string to display format if needed
+        if obj.assessment_date and isinstance(obj.assessment_date, str):
+            try:
+                # Just validate the format, don't convert
+                datetime.strptime(obj.assessment_date, '%d-%m-%Y')
+            except ValueError:
+                pass  # Keep as is if conversion fails
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+        
+        super().save_model(request, obj, form, change)
     
     def formatted_assessment_from_period(self, obj):
         return self.convert_date_to_month_year(obj.assessment_from_period)
@@ -753,16 +803,31 @@ class EnforcementRecoveryForm(forms.ModelForm):
             self.fields['tax_period'].required = False
             self.fields['tax_period'].empty_label = '---'
         
-        # Add date widget for notice_date
-        from django.forms import DateInput
+        # Add date widget for notice_date with text input to avoid Django validation
         if 'notice_date' in self.fields:
-            self.fields['notice_date'].widget = DateInput(attrs={'type': 'date'})
+            self.fields['notice_date'].widget = forms.TextInput(attrs={
+                'type': 'text',
+                'placeholder': 'DD-MM-YYYY',
+                'pattern': r'\d{2}-\d{2}-\d{4}'
+            })
+    
+    def clean_notice_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('notice_date')
+        if date_str:
+            try:
+                # Just validate the format, don't convert to date object
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
 
 
 @admin.register(EnforcementRecovery)
 class EnforcementRecoveryAdmin(admin.ModelAdmin):
     """Admin for Enforcement & Recovery - Case management"""
     form = EnforcementRecoveryForm
+    change_form_template = 'admin/enforcement_recovery_change_form.html'
     list_display = ['case_id', 'gstin', 'taxpayer_name', 'tax_period', 'case_type', 'amount_due', 'notice_date', 'action_taken', 'amount_recovered', 'status', 'remarks']
     list_display_links = ['case_id', 'gstin']
     list_filter = ['case_type', 'status', 'tax_period']
@@ -775,6 +840,23 @@ class EnforcementRecoveryAdmin(admin.ModelAdmin):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
             kwargs['widget'] = CustomDateInput()
         return super().formfield_for_dbfield(db_field, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        # Convert notice date string to display format if needed
+        if obj.notice_date and isinstance(obj.notice_date, str):
+            try:
+                # Just validate the format, don't convert
+                datetime.strptime(obj.notice_date, '%d-%m-%Y')
+            except ValueError:
+                pass  # Keep as is if conversion fails
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+        
+        super().save_model(request, obj, form, change)
     
     fieldsets = (
         ('Case Information', {
