@@ -26,15 +26,15 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 try:
-    if not User.objects.filter(username='admin').exists():
+    if not User.objects.filter(username='jamphel.tshering').exists():
         User.objects.create_superuser(
-            username='admin',
-            email='admin@gst-system.local',
-            password='admin123'
+            username='jamphel.tshering',
+            email='jimmes2008@gmail.com',
+            password='Admin@123'
         )
-        print("Admin user created: admin/admin123")
+        print("Superuser created: jamphel.tshering / Admin@123")
     else:
-        print("Admin user already exists")
+        print("Superuser already exists")
 except Exception as e:
     print(f"User creation error: {e}")
 
