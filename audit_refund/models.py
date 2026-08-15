@@ -82,6 +82,13 @@ class AuditCase(models.Model):
     
     def __str__(self):
         return f"{self.audit_case_id} - {self.taxpayer_name}"
+    
+    def save(self, *args, **kwargs):
+        """Override save to auto-set assessment_date in DD-MM-YYYY format"""
+        from datetime import datetime
+        if not self.assessment_date:
+            self.assessment_date = datetime.now().strftime('%d-%m-%Y')
+        super().save(*args, **kwargs)
 
 
 class AuditAssessment(models.Model):
@@ -175,6 +182,13 @@ class AuditAssessment(models.Model):
     
     def __str__(self):
         return f"{self.asc_no} - {self.taxpayer_name}"
+    
+    def save(self, *args, **kwargs):
+        """Override save to auto-set assessment_date in DD-MM-YYYY format"""
+        from datetime import datetime
+        if not self.assessment_date:
+            self.assessment_date = datetime.now().strftime('%d-%m-%Y')
+        super().save(*args, **kwargs)
 
 
 class AuditFinding(models.Model):
@@ -239,7 +253,7 @@ class RefundRegister(models.Model):
     
     # Period and Claim Details
     tax_period = models.CharField(max_length=20, verbose_name='Tax Period')
-    claim_date = models.DateField(verbose_name='Claim Date')
+    claim_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Claim Date')
     claimed_amount = models.DecimalField(max_digits=15, decimal_places=2, verbose_name='Claimed Amount')
     
     # GST Return Reference
@@ -259,7 +273,7 @@ class RefundRegister(models.Model):
     
     # Processing Details
     processing_days = models.IntegerField(default=0, verbose_name='Processing Days')
-    processed_date = models.DateField(null=True, blank=True, verbose_name='Processed Date')
+    processed_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Processed Date')
     processed_by = models.CharField(max_length=100, blank=True, verbose_name='Processed By')
     
     # Status and Reason
