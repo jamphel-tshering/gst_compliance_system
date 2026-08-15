@@ -115,8 +115,7 @@ def get_display_value(obj, field_name):
     return display_value or '-'
 
 @admin.register(GSTReturn)
-class GSTReturnAdmin(ImportExportModelAdmin):
-    resource_class = GSTReturnResource
+class GSTReturnAdmin(admin.ModelAdmin):
     form = GSTReturnForm
     list_display = ['display_tax_period', 'gstin', 'taxpayer_name', 'dzongkhag', 'display_organisation_type', 'display_frequency', 'declared_sales', 'declared_domestic_purchase', 'declared_import_value', 'declared_import_gst', 'domestic_purchase_itc_claimed', 'total_itc_claimed', 'declared_output_gst', 'gst_payable_refundable', 'actual_gst_payment_received', 'display_return_due_date', 'display_return_filing_date', 'display_filing_status', 'display_payment_status', 'display_compliance_status', 'remarks']
     list_filter = [TaxPeriodFilter, 'filing_status', 'payment_status', 'compliance_status', 'organisation_type', 'dzongkhag']

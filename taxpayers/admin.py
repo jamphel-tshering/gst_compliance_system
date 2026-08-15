@@ -180,8 +180,7 @@ def get_display_value(obj, field_name):
 
 
 @admin.register(TaxpayerMaster)
-class TaxpayerMasterAdmin(ImportExportModelAdmin):
-    resource_class = TaxpayerMasterResource
+class TaxpayerMasterAdmin(admin.ModelAdmin):
     form = TaxpayerMasterForm
     list_display = ['gstin', 'taxpayer_name', 'business_name', 'organisation_type', 'status', 'display_dzongkhag', 'frequency', 'display_registration_date']
     list_display_links = ['gstin', 'taxpayer_name']  # Allow clicking on GSTIN or name to edit
@@ -268,7 +267,7 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
 
 
 @admin.register(MultipleLicenseReference)
-class MultipleLicenseAdmin(ImportExportModelAdmin):
+class MultipleLicenseAdmin(admin.ModelAdmin):
     """Admin for Secondary Licenses - separate section for reference purposes"""
     resource_class = MultipleLicenseResource
     list_display = ['gstin', 'display_ramis_tpn', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'sector', 'sub_sector', 'business_activity', 'organisation_type', 'frequency', 'dzongkhag', 'status', 'display_registration_date', 'display_commencement_date', 'display_deregistration_date', 'email_address', 'mobile_number', 'display_business_address', 'remarks']

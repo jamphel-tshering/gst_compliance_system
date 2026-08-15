@@ -373,9 +373,8 @@ class AuditFindingAdmin(admin.ModelAdmin):
 
 
 @admin.register(RefundRegister)
-class RefundRegisterAdmin(ImportExportModelAdmin):
+class RefundRegisterAdmin(admin.ModelAdmin):
     """Admin for Refund Register - now under Audit & Refund Module"""
-    resource_class = RefundRegisterResource
     list_display = ['refund_id', 'gst_tpn', 'taxpayer_name', 'tax_period', 'claimed_amount', 'refund_approved', 'display_status', 'claim_date']
     list_filter = ['status', 'claim_date', 'tax_period']
     search_fields = ['refund_id', 'gst_tpn', 'taxpayer_name']
