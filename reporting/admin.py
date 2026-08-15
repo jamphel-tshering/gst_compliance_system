@@ -25,6 +25,20 @@ class GeneratedReportAdmin(admin.ModelAdmin):
     search_fields = ['report_name', 'report_template__name']
     readonly_fields = ['generated_at', 'file_size']
     actions = ['generate_sample_csv_report', 'generate_sample_excel_report']
+    change_list_template = 'admin/generated_report_change_list.html'
+    
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom_urls = [
+            path('generate/taxpayer-csv/', self.admin_site.admin_view(self.generate_taxpayer_csv), name='generate_taxpayer_csv'),
+            path('generate/taxpayer-excel/', self.admin_site.admin_view(self.generate_taxpayer_excel), name='generate_taxpayer_excel'),
+            path('generate/returns-csv/', self.admin_site.admin_view(self.generate_returns_csv), name='generate_returns_csv'),
+            path('generate/returns-excel/', self.admin_site.admin_view(self.generate_returns_excel), name='generate_returns_excel'),
+            path('generate/compliance-csv/', self.admin_site.admin_view(self.generate_compliance_csv), name='generate_compliance_csv'),
+            path('generate/compliance-excel/', self.admin_site.admin_view(self.generate_compliance_excel), name='generate_compliance_excel'),
+        ]
+        return custom_urls + urls
     
     def download_report(self, obj):
         """Download button for report"""
@@ -113,6 +127,187 @@ class GeneratedReportAdmin(admin.ModelAdmin):
         return response
     
     generate_sample_excel_report.short_description = 'Generate Sample Excel Report'
+    
+    def generate_taxpayer_csv(self, request):
+        """Direct URL method to generate taxpayer CSV report"""
+        from taxpayers.models import TaxpayerMaster
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="taxpayer_report.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['GSTIN', 'Taxpayer Name', 'Business Name', 'Status', 'Dzongkhag', 'Organisation Type', 'Registration Date'])
+        
+        taxpayers = TaxpayerMaster.objects.filter(is_primary_license=True)
+        for taxpayer in taxpayers:
+            writer.writerow([
+                taxpayer.gstin,
+                taxpayer.taxpayer_name,
+                taxpayer.business_name,
+                taxpayer.status,
+                taxpayer.dzongkhag,
+                taxpayer.organisation_type,
+                taxpayer.registration_date.strftime('%d-%m-%Y') if taxpayer.registration_date else ''
+            ])
+        
+        return response
+    
+    def generate_taxpayer_excel(self, request):
+        """Direct URL method to generate taxpayer Excel report"""
+        from taxpayers.models import TaxpayerMaster
+        
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Taxpayer Report'
+        
+        headers = ['GSTIN', 'Taxpayer Name', 'Business Name', 'Status', 'Dzongkhag', 'Organisation Type', 'Registration Date']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True)
+        
+        taxpayers = TaxpayerMaster.objects.filter(is_primary_license=True)
+        for row, taxpayer in enumerate(taxpayers, 2):
+            ws.cell(row=row, column=1, value=taxpayer.gstin)
+            ws.cell(row=row, column=2, value=taxpayer.taxpayer_name)
+            ws.cell(row=row, column=3, value=taxpayer.business_name)
+            ws.cell(row=row, column=4, value=taxpayer.status)
+            ws.cell(row=row, column=5, value=taxpayer.dzongkhag)
+            ws.cell(row=row, column=6, value=taxpayer.organisation_type)
+            ws.cell(row=row, column=7, value=taxpayer.registration_date.strftime('%d-%m-%Y') if taxpayer.registration_date else '')
+        
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="taxpayer_report.xlsx"'
+        
+        return response
+    
+    def generate_returns_csv(self, request):
+        """Direct URL method to generate returns CSV report"""
+        from returns.models import GSTReturn
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="gst_returns_report.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Tax Period', 'GSTIN', 'Taxpayer Name', 'Declared Sales', 'Declared Output GST', 'GST Payable/Refundable', 'Filing Status', 'Payment Status'])
+        
+        returns = GSTReturn.objects.all()
+        for ret in returns:
+            writer.writerow([
+                ret.tax_period,
+                ret.gstin,
+                ret.taxpayer_name,
+                ret.declared_sales,
+                ret.declared_output_gst,
+                ret.gst_payable_refundable,
+                ret.filing_status,
+                ret.payment_status
+            ])
+        
+        return response
+    
+    def generate_returns_excel(self, request):
+        """Direct URL method to generate returns Excel report"""
+        from returns.models import GSTReturn
+        
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'GST Returns Report'
+        
+        headers = ['Tax Period', 'GSTIN', 'Taxpayer Name', 'Declared Sales', 'Declared Output GST', 'GST Payable/Refundable', 'Filing Status', 'Payment Status']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True)
+        
+        returns = GSTReturn.objects.all()
+        for row, ret in enumerate(returns, 2):
+            ws.cell(row=row, column=1, value=ret.tax_period)
+            ws.cell(row=row, column=2, value=ret.gstin)
+            ws.cell(row=row, column=3, value=ret.taxpayer_name)
+            ws.cell(row=row, column=4, value=ret.declared_sales)
+            ws.cell(row=row, column=5, value=ret.declared_output_gst)
+            ws.cell(row=row, column=6, value=ret.gst_payable_refundable)
+            ws.cell(row=row, column=7, value=ret.filing_status)
+            ws.cell(row=row, column=8, value=ret.payment_status)
+        
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="gst_returns_report.xlsx"'
+        
+        return response
+    
+    def generate_compliance_csv(self, request):
+        """Direct URL method to generate compliance CSV report"""
+        from compliance.models import ComplianceMonitoring
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="compliance_report.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Compliance ID', 'Tax Period', 'GSTIN', 'Taxpayer Name', 'Filing Status', 'Filing Delay', 'Payment Status', 'Compliance Status'])
+        
+        compliance_records = ComplianceMonitoring.objects.all()
+        for record in compliance_records:
+            writer.writerow([
+                record.compliance_id,
+                record.tax_period,
+                record.gstin,
+                record.taxpayer_name,
+                record.filing_status,
+                record.filing_delay,
+                record.payment_status,
+                record.compliance_status
+            ])
+        
+        return response
+    
+    def generate_compliance_excel(self, request):
+        """Direct URL method to generate compliance Excel report"""
+        from compliance.models import ComplianceMonitoring
+        
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = 'Compliance Report'
+        
+        headers = ['Compliance ID', 'Tax Period', 'GSTIN', 'Taxpayer Name', 'Filing Status', 'Filing Delay', 'Payment Status', 'Compliance Status']
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = Font(bold=True)
+        
+        compliance_records = ComplianceMonitoring.objects.all()
+        for row, record in enumerate(compliance_records, 2):
+            ws.cell(row=row, column=1, value=record.compliance_id)
+            ws.cell(row=row, column=2, value=record.tax_period)
+            ws.cell(row=row, column=3, value=record.gstin)
+            ws.cell(row=row, column=4, value=record.taxpayer_name)
+            ws.cell(row=row, column=5, value=record.filing_status)
+            ws.cell(row=row, column=6, value=record.filing_delay)
+            ws.cell(row=row, column=7, value=record.payment_status)
+            ws.cell(row=row, column=8, value=record.compliance_status)
+        
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="compliance_report.xlsx"'
+        
+        return response
 
 
 @admin.register(ReportSchedule)
