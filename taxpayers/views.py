@@ -24,6 +24,27 @@ class TaxpayerMasterViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
     
     @action(detail=False, methods=['get'])
+    def get_by_gstin(self, request):
+        """Get taxpayer information by GSTIN"""
+        gstin = request.query_params.get('gstin')
+        is_primary = request.query_params.get('is_primary_license', 'true')
+        
+        try:
+            queryset = self.queryset.filter(gstin=gstin)
+            if is_primary == 'true':
+                queryset = queryset.filter(is_primary_license=True)
+            
+            taxpayer = queryset.first()
+            
+            if taxpayer:
+                serializer = self.get_serializer(taxpayer)
+                return Response(serializer.data)
+            else:
+                return Response({'error': 'Taxpayer not found'}, status=404)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+    
+    @action(detail=False, methods=['get'])
     def by_dzongkhag(self, request):
         """Get taxpayers grouped by dzongkhag"""
         dzongkhag_data = {}
