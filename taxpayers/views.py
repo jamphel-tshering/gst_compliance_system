@@ -23,9 +23,9 @@ class TaxpayerMasterViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(active_taxpayers, many=True)
         return Response(serializer.data)
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], authentication_classes=[], permission_classes=[])
     def get_by_gstin(self, request):
-        """Get taxpayer information by GSTIN"""
+        """Get taxpayer information by GSTIN - allows unauthenticated access for admin panel"""
         gstin = request.query_params.get('gstin')
         
         try:

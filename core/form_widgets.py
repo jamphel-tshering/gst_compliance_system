@@ -8,10 +8,10 @@ from datetime import datetime
 
 class CustomDateInput(DateInput):
     """Custom date input widget with dd-mm-yyyy format"""
-    input_type = 'date'
+    input_type = 'text'
     
     def __init__(self, attrs=None):
-        default_attrs = {'type': 'date'}
+        default_attrs = {'type': 'text', 'placeholder': 'DD-MM-YYYY', 'pattern': r'\d{2}-\d{2}-\d{4}'}
         if attrs:
             default_attrs.update(attrs)
         super().__init__(attrs=default_attrs)
@@ -24,13 +24,13 @@ class CustomDateInput(DateInput):
                 for fmt in ['%Y-%m-%d', '%d-%m-%Y', '%Y/%m/%d', '%d/%m/%Y']:
                     try:
                         parsed_date = datetime.strptime(value, fmt)
-                        return parsed_date.strftime('%Y-%m-%d')  # HTML5 date input requires YYYY-MM-DD
+                        return parsed_date.strftime('%d-%m-%Y')
                     except ValueError:
                         continue
                 return value
             else:
-                # Convert datetime to YYYY-MM-DD for HTML5 date input
-                return value.strftime('%Y-%m-%d')
+                # Convert datetime to DD-MM-YYYY
+                return value.strftime('%d-%m-%Y')
         return ''
 
 

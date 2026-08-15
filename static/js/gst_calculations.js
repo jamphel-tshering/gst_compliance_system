@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Fetching taxpayer info for GSTIN:', gstin.value);
         
         // Fetch taxpayer info from API
-        fetch(`/api/taxpayers/get_by_gstin/?gstin=${gstin.value}`)
+        fetch(`/api/taxpayers/taxpayers/get_by_gstin/?gstin=${gstin.value}`)
             .then(response => {
                 console.log('Response status:', response.status);
                 return response.json();
@@ -39,7 +39,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 console.log('Taxpayer data received:', data);
                 if (data && !data.error) {
-                    if (taxpayerName) taxpayerName.value = data.taxpayer_name || '';
+                    console.log('Filling taxpayer name:', data.taxpayer_name);
+                    if (taxpayerName) {
+                        taxpayerName.value = data.taxpayer_name || '';
+                        console.log('Taxpayer name set to:', taxpayerName.value);
+                    }
                     if (dzongkhag) dzongkhag.value = data.dzongkhag || '';
                     if (organisationType) organisationType.value = data.organisation_type || '';
                     if (frequency) frequency.value = data.frequency || '';
@@ -100,17 +104,31 @@ document.addEventListener('DOMContentLoaded', function() {
             dueDate = new Date(year, month + 1, 20);
         }
         
-        // Format as YYYY-MM-DD for date input
-        const formattedDate = dueDate.toISOString().split('T')[0];
+        // Format as DD-MM-YYYY for display
+        const day = String(dueDate.getDate()).padStart(2, '0');
+        const monthNum = String(dueDate.getMonth() + 1).padStart(2, '0');
+        const yearNum = dueDate.getFullYear();
+        const formattedDate = `${day}-${monthNum}-${yearNum}`;
+        
         if (returnDueDate) returnDueDate.value = formattedDate;
+        console.log('Calculated due date:', formattedDate);
     }
     
     // Function to calculate filing delay
     function calculateFilingDelay() {
         if (!returnFilingDate?.value || !returnDueDate?.value) return;
         
-        const filingDate = new Date(returnFilingDate.value);
-        const dueDate = new Date(returnDueDate.value);
+        // Parse dates in DD-MM-YYYY format
+        const parseDate = (dateStr) => {
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return new Date(parts[2], parts[1] - 1, parts[0]); // YYYY, MM-1, DD
+            }
+            return new Date(dateStr); // Fallback for other formats
+        };
+        
+        const filingDate = parseDate(returnFilingDate.value);
+        const dueDate = parseDate(returnDueDate.value);
         
         const diffTime = filingDate - dueDate;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
