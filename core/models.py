@@ -136,6 +136,79 @@ class User(AbstractUser):
         }
         return module_permissions.get(module, False)
     
+    def grant_all_permissions(self):
+        """Grant all permissions to the user (for administrators)"""
+        # Taxpayer Module Access
+        self.can_view_taxpayers = True
+        self.can_add_taxpayers = True
+        self.can_edit_taxpayers = True
+        self.can_delete_taxpayers = True
+        
+        # GST Returns Module Access
+        self.can_view_returns = True
+        self.can_add_returns = True
+        self.can_edit_returns = True
+        self.can_delete_returns = True
+        
+        # Refunds Module Access
+        self.can_view_refunds = True
+        self.can_add_refunds = True
+        self.can_edit_refunds = True
+        self.can_delete_refunds = True
+        
+        # Compliance Module Access
+        self.can_view_compliance = True
+        self.can_add_compliance = True
+        self.can_edit_compliance = True
+        self.can_delete_compliance = True
+        
+        # Risk Assessment Module Access
+        self.can_view_risk_assessment = True
+        self.can_run_risk_assessment = True
+        self.can_edit_risk_assessment = True
+        self.can_approve_risk_assessment = True
+        
+        # Enforcement & Recovery Module Access
+        self.can_view_enforcement = True
+        self.can_add_enforcement = True
+        self.can_edit_enforcement = True
+        self.can_delete_enforcement = True
+        
+        # Audit Module Access
+        self.can_view_audit = True
+        self.can_create_audit = True
+        self.can_edit_audit = True
+        self.can_approve_audit = True
+        
+        # Reports Module Access
+        self.can_view_reports = True
+        self.can_generate_reports = True
+        self.can_export_reports = True
+        
+        # User Management Access
+        self.can_view_users = True
+        self.can_add_users = True
+        self.can_edit_users = True
+        self.can_delete_users = True
+        self.can_manage_permissions = True
+        
+        # System Settings Access
+        self.can_view_settings = True
+        self.can_edit_settings = True
+        
+        # Import/Export Access
+        self.can_import_data = True
+        self.can_export_data = True
+
+    def save(self, *args, **kwargs):
+        """Override save to automatically grant all permissions to administrators"""
+        if self.role == 'administrator':
+            self.grant_all_permissions()
+            # Also ensure Django superuser status
+            self.is_superuser = True
+            self.is_staff = True
+        super().save(*args, **kwargs)
+
     def get_access_summary(self):
         """Get summary of user's access permissions"""
         access_summary = {
