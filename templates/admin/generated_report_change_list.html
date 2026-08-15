@@ -4,33 +4,42 @@
 {% block object-tools-items %}
 {{ block.super }}
 <li>
-    <a href="../generate/taxpayer-csv/" class="button" style="background-color: #417690; color: white;">
+    <a href="javascript:void(0)" onclick="generateReport('taxpayer-csv')" class="button" style="background-color: #417690; color: white;">
         📊 Taxpayer CSV
     </a>
 </li>
 <li>
-    <a href="../generate/taxpayer-excel/" class="button" style="background-color: #28a745; color: white;">
+    <a href="javascript:void(0)" onclick="generateReport('taxpayer-excel')" class="button" style="background-color: #28a745; color: white;">
         📊 Taxpayer Excel
     </a>
 </li>
 <li>
-    <a href="../generate/returns-csv/" class="button" style="background-color: #417690; color: white;">
+    <a href="javascript:void(0)" onclick="generateReport('returns-csv')" class="button" style="background-color: #417690; color: white;">
         📈 Returns CSV
     </a>
 </li>
 <li>
-    <a href="../generate/returns-excel/" class="button" style="background-color: #28a745; color: white;">
+    <a href="javascript:void(0)" onclick="generateReport('returns-excel')" class="button" style="background-color: #28a745; color: white;">
         📈 Returns Excel
     </a>
 </li>
 <li>
-    <a href="../generate/compliance-csv/" class="button" style="background-color: #417690; color: white;">
+    <a href="javascript:void(0)" onclick="generateReport('compliance-csv')" class="button" style="background-color: #417690; color: white;">
         ✓ Compliance CSV
     </a>
 </li>
 <li>
-    <a href="../generate/compliance-excel/" class="button" style="background-color: #28a745; color: white;">
+    <a href="javascript:void(0)" onclick="generateReport('compliance-excel')" class="button" style="background-color: #28a745; color: white;">
         ✓ Compliance Excel
     </a>
 </li>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+function generateReport(reportType) {
+    window.location.href = 'generate/' + reportType + '/';
+}
+</script>
 {% endblock %}

@@ -24,19 +24,19 @@ class GeneratedReportAdmin(admin.ModelAdmin):
     list_filter = ['report_status', 'file_type', 'generated_at']
     search_fields = ['report_name', 'report_template__name']
     readonly_fields = ['generated_at', 'file_size']
-    actions = ['generate_sample_csv_report', 'generate_sample_excel_report']
+    actions = ['generate_taxpayer_csv_action', 'generate_taxpayer_excel_action', 'generate_returns_csv_action', 'generate_returns_excel_action', 'generate_compliance_csv_action', 'generate_compliance_excel_action']
     change_list_template = 'admin/generated_report_change_list.html'
     
     def get_urls(self):
         from django.urls import path
         urls = super().get_urls()
         custom_urls = [
-            path('generate/taxpayer-csv/', self.admin_site.admin_view(self.generate_taxpayer_csv), name='generate_taxpayer_csv'),
-            path('generate/taxpayer-excel/', self.admin_site.admin_view(self.generate_taxpayer_excel), name='generate_taxpayer_excel'),
-            path('generate/returns-csv/', self.admin_site.admin_view(self.generate_returns_csv), name='generate_returns_csv'),
-            path('generate/returns-excel/', self.admin_site.admin_view(self.generate_returns_excel), name='generate_returns_excel'),
-            path('generate/compliance-csv/', self.admin_site.admin_view(self.generate_compliance_csv), name='generate_compliance_csv'),
-            path('generate/compliance-excel/', self.admin_site.admin_view(self.generate_compliance_excel), name='generate_compliance_excel'),
+            path('generate/taxpayer-csv/', self.admin_site.admin_view(self.generate_taxpayer_csv)),
+            path('generate/taxpayer-excel/', self.admin_site.admin_view(self.generate_taxpayer_excel)),
+            path('generate/returns-csv/', self.admin_site.admin_view(self.generate_returns_csv)),
+            path('generate/returns-excel/', self.admin_site.admin_view(self.generate_returns_excel)),
+            path('generate/compliance-csv/', self.admin_site.admin_view(self.generate_compliance_csv)),
+            path('generate/compliance-excel/', self.admin_site.admin_view(self.generate_compliance_excel)),
         ]
         return custom_urls + urls
     
@@ -55,78 +55,6 @@ class GeneratedReportAdmin(admin.ModelAdmin):
         return 'No file'
     print_report.short_description = 'Print'
     print_report.allow_tags = True
-    
-    def generate_sample_csv_report(self, request, queryset):
-        """Generate a sample CSV report"""
-        from taxpayers.models import TaxpayerMaster
-        
-        # Create CSV content
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="taxpayer_report.csv"'
-        
-        writer = csv.writer(response)
-        writer.writerow(['GSTIN', 'Taxpayer Name', 'Business Name', 'Status', 'Dzongkhag', 'Organisation Type'])
-        
-        taxpayers = TaxpayerMaster.objects.filter(is_primary_license=True)[:100]
-        for taxpayer in taxpayers:
-            writer.writerow([
-                taxpayer.gstin,
-                taxpayer.taxpayer_name,
-                taxpayer.business_name,
-                taxpayer.status,
-                taxpayer.dzongkhag,
-                taxpayer.organisation_type
-            ])
-        
-        return response
-    
-    generate_sample_csv_report.short_description = 'Generate Sample CSV Report'
-    
-    def generate_sample_excel_report(self, request, queryset):
-        """Generate a sample Excel report"""
-        from taxpayers.models import TaxpayerMaster
-        from django.http import HttpResponse
-        import openpyxl
-        from openpyxl.styles import Font
-        from django.core.files.base import ContentFile
-        from django.utils.text import slugify
-        
-        # Create Excel workbook
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = 'Taxpayer Report'
-        
-        # Add headers
-        headers = ['GSTIN', 'Taxpayer Name', 'Business Name', 'Status', 'Dzongkhag', 'Organisation Type']
-        for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col, value=header)
-            cell.font = Font(bold=True)
-        
-        # Add data
-        taxpayers = TaxpayerMaster.objects.filter(is_primary_license=True)[:100]
-        for row, taxpayer in enumerate(taxpayers, 2):
-            ws.cell(row=row, column=1, value=taxpayer.gstin)
-            ws.cell(row=row, column=2, value=taxpayer.taxpayer_name)
-            ws.cell(row=row, column=3, value=taxpayer.business_name)
-            ws.cell(row=row, column=4, value=taxpayer.status)
-            ws.cell(row=row, column=5, value=taxpayer.dzongkhag)
-            ws.cell(row=row, column=6, value=taxpayer.organisation_type)
-        
-        # Save to BytesIO
-        output = io.BytesIO()
-        wb.save(output)
-        output.seek(0)
-        
-        # Create response
-        response = HttpResponse(
-            output.getvalue(),
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename="taxpayer_report.xlsx"'
-        
-        return response
-    
-    generate_sample_excel_report.short_description = 'Generate Sample Excel Report'
     
     def generate_taxpayer_csv(self, request):
         """Direct URL method to generate taxpayer CSV report"""
@@ -308,6 +236,31 @@ class GeneratedReportAdmin(admin.ModelAdmin):
         response['Content-Disposition'] = 'attachment; filename="compliance_report.xlsx"'
         
         return response
+    
+    # Admin actions (for bulk selection)
+    def generate_taxpayer_csv_action(self, request, queryset):
+        return self.generate_taxpayer_csv(request)
+    generate_taxpayer_csv_action.short_description = 'Generate Taxpayer CSV Report'
+    
+    def generate_taxpayer_excel_action(self, request, queryset):
+        return self.generate_taxpayer_excel(request)
+    generate_taxpayer_excel_action.short_description = 'Generate Taxpayer Excel Report'
+    
+    def generate_returns_csv_action(self, request, queryset):
+        return self.generate_returns_csv(request)
+    generate_returns_csv_action.short_description = 'Generate Returns CSV Report'
+    
+    def generate_returns_excel_action(self, request, queryset):
+        return self.generate_returns_excel(request)
+    generate_returns_excel_action.short_description = 'Generate Returns Excel Report'
+    
+    def generate_compliance_csv_action(self, request, queryset):
+        return self.generate_compliance_csv(request)
+    generate_compliance_csv_action.short_description = 'Generate Compliance CSV Report'
+    
+    def generate_compliance_excel_action(self, request, queryset):
+        return self.generate_compliance_excel(request)
+    generate_compliance_excel_action.short_description = 'Generate Compliance Excel Report'
 
 
 @admin.register(ReportSchedule)
