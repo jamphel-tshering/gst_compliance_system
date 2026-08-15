@@ -267,7 +267,12 @@ class TaxpayerMasterAdmin(admin.ModelAdmin):
 @admin.register(MultipleLicenseReference)
 class MultipleLicenseAdmin(admin.ModelAdmin):
     """Admin for Secondary Licenses - separate section for reference purposes"""
-    resource_class = MultipleLicenseResource
+    list_display = ['gstin', 'display_ramis_tpn', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'sector', 'sub_sector', 'business_activity', 'organisation_type', 'frequency', 'dzongkhag', 'status', 'display_registration_date', 'display_commencement_date', 'display_deregistration_date', 'email_address', 'mobile_number', 'display_business_address', 'remarks']
+
+
+@admin.register(MultipleLicenseReference)
+class MultipleLicenseAdmin(admin.ModelAdmin):
+    """Admin for Secondary Licenses - separate section for reference purposes"""
     list_display = ['gstin', 'display_ramis_tpn', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'sector', 'sub_sector', 'business_activity', 'organisation_type', 'frequency', 'dzongkhag', 'status', 'display_registration_date', 'display_commencement_date', 'display_deregistration_date', 'email_address', 'mobile_number', 'display_business_address', 'remarks']
     list_display_links = ['gstin', 'taxpayer_name']
     list_filter = ['organisation_type', 'dzongkhag', 'status', 'frequency', 'registration_date']
