@@ -27,6 +27,25 @@ class ComplianceMonitoring(models.Model):
     tax_period = models.CharField(max_length=20, verbose_name='Tax Period')
     assessment_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Assessment Date')
     
+    def save(self, *args, **kwargs):
+        """Override save to auto-generate compliance_id and set assessment_date"""
+        from datetime import datetime
+        if not self.compliance_id:
+            # Generate compliance_id
+            last_compliance = ComplianceMonitoring.objects.all().order_by('-id').first()
+            if last_compliance and last_compliance.compliance_id:
+                last_id = int(last_compliance.compliance_id.replace('CM', ''))
+                new_id = last_id + 1
+            else:
+                new_id = 1
+            self.compliance_id = f'CM{new_id:06d}'
+        
+        # Set assessment_date to current date in DD-MM-YYYY format if not set
+        if not self.assessment_date:
+            self.assessment_date = datetime.now().strftime('%d-%m-%Y')
+        
+        super().save(*args, **kwargs)
+    
     # Taxpayer Information (from GST Returns, not duplicated)
     gstin = models.CharField(max_length=15, verbose_name='GSTIN')
     taxpayer_name = models.CharField(max_length=200, verbose_name='Taxpayer Name')
