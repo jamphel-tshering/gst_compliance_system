@@ -105,7 +105,7 @@ def main_dashboard(request):
 # Use default admin site for core to avoid circular import
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ['email', 'username', 'first_name', 'last_name', 'get_role_display', 'is_active', 'created_at']
+    list_display = ['get_full_name', 'email', 'username', 'get_role_display', 'is_active', 'created_at']
     list_filter = ['role', 'is_active', 'created_at']
     search_fields = ['email', 'username', 'first_name', 'last_name']
     ordering = ['-created_at']
