@@ -2,6 +2,8 @@ from django.contrib import admin
 from django import forms
 from django.contrib.admin import SimpleListFilter
 from datetime import datetime, date
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
 from .models import GSTReturn
 from core.form_widgets import CustomDateInput, TaxPeriodSelect
 from core.helper_functions import get_taxpayer_by_gstin, calculate_tax_period_due_date, calculate_filing_delay, calculate_gst_calculations
@@ -143,8 +145,17 @@ def get_display_value(obj, field_name):
     
     return display_value or '-'
 
+
+class GSTReturnResource(resources.ModelResource):
+    class Meta:
+        model = GSTReturn
+        skip_unchanged = True
+        report_skipped = True
+        import_id_fields = ['gstin', 'tax_period']
+
+
 @admin.register(GSTReturn)
-class GSTReturnAdmin(admin.ModelAdmin):
+class GSTReturnAdmin(ImportExportModelAdmin):
     form = GSTReturnForm
     change_form_template = 'admin/returns_change_form.html'
     list_display = ['display_tax_period', 'gstin', 'taxpayer_name', 'dzongkhag', 'display_organisation_type', 'display_frequency', 'declared_sales', 'declared_domestic_purchase', 'declared_import_value', 'declared_import_gst', 'domestic_purchase_itc_claimed', 'total_itc_claimed', 'declared_output_gst', 'gst_payable_refundable', 'actual_gst_payment_received', 'display_return_due_date', 'display_return_filing_date', 'display_filing_status', 'display_payment_status', 'display_compliance_status', 'remarks']

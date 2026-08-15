@@ -4,6 +4,8 @@ from django import forms
 from django.forms import DateInput
 from django.http import JsonResponse
 from django.urls import path
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
 from .models import TaxpayerMaster, MultipleLicenseReference, TaxpayerEnquiry
 from core.form_widgets import CustomDateInput
 
@@ -178,8 +180,16 @@ def get_display_value(obj, field_name):
     return str(value)
 
 
+class TaxpayerMasterResource(resources.ModelResource):
+    class Meta:
+        model = TaxpayerMaster
+        skip_unchanged = True
+        report_skipped = True
+        import_id_fields = ['gstin']
+
+
 @admin.register(TaxpayerMaster)
-class TaxpayerMasterAdmin(admin.ModelAdmin):
+class TaxpayerMasterAdmin(ImportExportModelAdmin):
     form = TaxpayerMasterForm
     list_display = ['gstin', 'taxpayer_name', 'business_name', 'organisation_type', 'status', 'display_dzongkhag', 'frequency', 'display_registration_date']
     list_display_links = ['gstin', 'taxpayer_name']  # Allow clicking on GSTIN or name to edit

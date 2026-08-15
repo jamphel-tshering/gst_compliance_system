@@ -6,5 +6,7 @@ python-dotenv>=1.0
 djangorestframework>=3.14
 django-cors-headers>=4.0
 django-filter>=23.0
+django-import-export>=4.0
+tablib>=3.5
 # PostgreSQL client library for Render.com deployment
 psycopg2-binary==2.9.9

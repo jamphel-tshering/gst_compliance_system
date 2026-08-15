@@ -15,10 +15,26 @@ class ReportTemplateAdmin(admin.ModelAdmin):
 
 @admin.register(GeneratedReport)
 class GeneratedReportAdmin(admin.ModelAdmin):
-    list_display = ['report_name', 'report_template', 'report_status', 'generated_by', 'generated_at']
+    list_display = ['report_name', 'report_template', 'report_status', 'generated_by', 'generated_at', 'download_report', 'print_report']
     list_filter = ['report_status', 'file_type', 'generated_at']
     search_fields = ['report_name', 'report_template__name']
     readonly_fields = ['generated_at', 'file_size']
+    
+    def download_report(self, obj):
+        """Download button for report"""
+        if obj.file_path:
+            return f'<a href="{obj.file_path}" class="button" download>Download</a>'
+        return 'No file'
+    download_report.short_description = 'Download'
+    download_report.allow_tags = True
+    
+    def print_report(self, obj):
+        """Print button for report"""
+        if obj.file_path:
+            return f'<button onclick="window.print()" class="button">Print</button>'
+        return 'No file'
+    print_report.short_description = 'Print'
+    print_report.allow_tags = True
 
 
 @admin.register(ReportSchedule)

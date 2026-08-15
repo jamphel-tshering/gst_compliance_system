@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_filters',
+    'import_export',
     
     # Local apps - ordered as requested for admin panel
     'core',              # 1) Core (Authentication and Authorization)
