@@ -27,14 +27,13 @@ class TaxpayerMasterViewSet(viewsets.ModelViewSet):
     def get_by_gstin(self, request):
         """Get taxpayer information by GSTIN"""
         gstin = request.query_params.get('gstin')
-        is_primary = request.query_params.get('is_primary_license', 'true')
         
         try:
-            queryset = self.queryset.filter(gstin=gstin)
-            if is_primary == 'true':
-                queryset = queryset.filter(is_primary_license=True)
-            
-            taxpayer = queryset.first()
+            # Filter by GSTIN and primary license
+            taxpayer = TaxpayerMaster.objects.filter(
+                gstin=gstin,
+                is_primary_license=True
+            ).first()
             
             if taxpayer:
                 serializer = self.get_serializer(taxpayer)

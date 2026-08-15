@@ -4,6 +4,12 @@
  */
 document.addEventListener('DOMContentLoaded', function() {
     // Get the form fields
+    const gstin = document.getElementById('id_gstin');
+    const taxpayerName = document.getElementById('id_taxpayer_name');
+    const dzongkhag = document.getElementById('id_dzongkhag');
+    const organisationType = document.getElementById('id_organisation_type');
+    const frequency = document.getElementById('id_frequency');
+    
     const declaredSales = document.getElementById('id_declared_sales');
     const declaredImportValue = document.getElementById('id_declared_import_value');
     const declaredDomesticPurchase = document.getElementById('id_declared_domestic_purchase');
@@ -17,6 +23,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const declaredOutputGST = document.getElementById('id_declared_output_gst');
     const totalITCClaimed = document.getElementById('id_total_itc_claimed');
     const gstPayableRefundable = document.getElementById('id_gst_payable_refundable');
+    
+    // Function to auto-fetch taxpayer information
+    function fetchTaxpayerInfo() {
+        if (!gstin?.value || gstin.value.length < 3) return;
+        
+        console.log('Fetching taxpayer info for GSTIN:', gstin.value);
+        
+        // Fetch taxpayer info from API
+        fetch(`/api/taxpayers/get_by_gstin/?gstin=${gstin.value}`)
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Taxpayer data received:', data);
+                if (data && !data.error) {
+                    if (taxpayerName) taxpayerName.value = data.taxpayer_name || '';
+                    if (dzongkhag) dzongkhag.value = data.dzongkhag || '';
+                    if (organisationType) organisationType.value = data.organisation_type || '';
+                    if (frequency) frequency.value = data.frequency || '';
+                    console.log('Taxpayer info updated successfully');
+                } else {
+                    console.log('No taxpayer found or error:', data);
+                }
+            })
+            .catch(error => {
+                console.log('Error fetching taxpayer info:', error);
+            });
+    }
     
     // Function to calculate GST values
     function calculateGST() {
@@ -101,6 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filing date change triggers delay calculation
     if (returnFilingDate) returnFilingDate.addEventListener('change', calculateFilingDelay);
     if (returnDueDate) returnDueDate.addEventListener('change', calculateFilingDelay);
+    
+    // GSTIN change triggers taxpayer info fetch
+    if (gstin) gstin.addEventListener('blur', fetchTaxpayerInfo);
     
     // Calculate initially if values exist
     calculateGST();
