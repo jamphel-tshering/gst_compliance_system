@@ -4,8 +4,10 @@ from django.urls import reverse
 from django.http import HttpResponse, FileResponse, JsonResponse
 from django.utils import timezone
 from datetime import datetime, timedelta
+from decimal import Decimal
 import csv
 import io
+import json
 from .models import ReportTemplate, GeneratedReport, ReportSchedule, DashboardWidget, AnalyticsData
 
 
@@ -35,7 +37,6 @@ class GeneratedReportAdmin(admin.ModelAdmin):
     
     def get_chart_data(self):
         """Generate chart data for dashboard"""
-        import json
         from taxpayers.models import TaxpayerMaster
         from returns.models import GSTReturn
         from compliance.models import ComplianceMonitoring
@@ -68,16 +69,26 @@ class GeneratedReportAdmin(admin.ModelAdmin):
                     month_num = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
                                   'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}[month]
                     key = f"{year}-{month_num}"
-                    monthly_revenue[key] = monthly_revenue.get(key, 0) + float(ret.declared_sales)
+                    # Convert Decimal to float for JSON serialization
+                    sales_value = float(ret.declared_sales) if isinstance(ret.declared_sales, Decimal) else ret.declared_sales
+                    monthly_revenue[key] = monthly_revenue.get(key, 0) + sales_value
                 except:
                     pass
         
-        return json.dumps({
-            'taxpayer_status': taxpayer_status_data,
-            'returns_by_period': returns_by_period,
-            'compliance_status': compliance_status_data,
-            'monthly_revenue': monthly_revenue
-        })
+        # Convert all values to ensure JSON serializable
+        def convert_value(value):
+            if isinstance(value, Decimal):
+                return float(value)
+            return value
+        
+        chart_data = {
+            'taxpayer_status': {k: convert_value(v) for k, v in taxpayer_status_data.items()},
+            'returns_by_period': {k: convert_value(v) for k, v in returns_by_period.items()},
+            'compliance_status': {k: convert_value(v) for k, v in compliance_status_data.items()},
+            'monthly_revenue': {k: convert_value(v) for k, v in monthly_revenue.items()}
+        }
+        
+        return json.dumps(chart_data)
     
     def get_urls(self):
         from django.urls import path
