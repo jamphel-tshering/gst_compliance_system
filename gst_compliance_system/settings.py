@@ -73,6 +73,10 @@ INSTALLED_APPS = [
 # Custom admin ordering without creating custom admin site
 # This will be applied in urls.py to avoid circular imports
 
+# Commented out custom middleware that may interfere with admin templates
+# 'core.security_middleware.SecurityMiddleware',
+# 'core.security_middleware.PermissionMiddleware',
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add Whitenoise for static files
@@ -83,8 +87,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'core.security_middleware.SecurityMiddleware',  # Custom security middleware
-    'core.security_middleware.PermissionMiddleware',  # Custom permission middleware
 ]
 
 ROOT_URLCONF = 'gst_compliance_system.urls'
