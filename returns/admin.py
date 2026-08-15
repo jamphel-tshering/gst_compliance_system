@@ -258,6 +258,10 @@ class GSTReturnAdmin(admin.ModelAdmin):
     def display_return_due_date(self, obj):
         """Display return due date in dd-mm-yyyy format with leading zeros"""
         if obj.return_due_date:
+            # If it's already a string in DD-MM-YYYY format, return as-is
+            if isinstance(obj.return_due_date, str):
+                return obj.return_due_date
+            # If it's a date object, format it
             return obj.return_due_date.strftime('%d-%m-%Y')
         return '-'
     display_return_due_date.short_description = 'Return Due Date'
@@ -265,6 +269,10 @@ class GSTReturnAdmin(admin.ModelAdmin):
     def display_return_filing_date(self, obj):
         """Display return filing date in dd-mm-yyyy format with leading zeros"""
         if obj.return_filing_date:
+            # If it's already a string in DD-MM-YYYY format, return as-is
+            if isinstance(obj.return_filing_date, str):
+                return obj.return_filing_date
+            # If it's a date object, format it
             return obj.return_filing_date.strftime('%d-%m-%Y')
         return '-'
     display_return_filing_date.short_description = 'Return Filing Date'
