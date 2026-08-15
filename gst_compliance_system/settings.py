@@ -74,7 +74,9 @@ INSTALLED_APPS = [
 
 # Commented out custom middleware that may interfere with admin templates
 # 'core.security_middleware.SecurityMiddleware',
-# 'core.security_middleware.PermissionMiddleware',
+# 'core.security_middleware.PermissionMiddleware'
+
+# Force deployment rebuild - fix for template context issues - v3
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
