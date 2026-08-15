@@ -184,8 +184,7 @@ class AuditCaseAdmin(admin.ModelAdmin):
             kwargs['widget'] = CustomDateInput()
         return super().formfield_for_dbfield(db_field, **kwargs)
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     # Use raw_id_fields to avoid dropdown decimal conversion issues
     raw_id_fields = ['risk_referral', 'assigned_officer', 'assigned_by', 'assessor']
@@ -391,8 +390,7 @@ class RefundRegisterAdmin(ImportExportModelAdmin):
             kwargs['widget'] = CustomDateInput()
         return super().formfield_for_dbfield(db_field, **kwargs)
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     def display_status(self, obj):
         return get_display_value(obj, 'status')

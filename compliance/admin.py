@@ -136,8 +136,7 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     search_fields = ['monitoring_id', 'gstin', 'taxpayer_name']
     date_hierarchy = 'created_at'
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     """Admin for Compliance & Enforcement - Simple table based on GST Returns"""
     form = ComplianceMonitoringForm
@@ -148,8 +147,7 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     list_per_page = 20
     date_hierarchy = 'assessment_date'
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     fieldsets = (
         ('Assessment Information', {
@@ -170,8 +168,7 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     
     actions = ['auto_populate_from_returns', 'recalculate_compliance_status']
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     def auto_populate_from_returns(self, request, queryset):
         """Auto-populate compliance from GST Returns"""
@@ -438,8 +435,7 @@ class ComplianceRiskReferralAdmin(admin.ModelAdmin):
     form = ComplianceRiskReferralForm
     list_display = ['risk_id', 'formatted_assessment_from_period', 'gstin', 'taxpayer_name', 'risk_level', 'system_decision', 'assessor', 'assignment_status', 'final_selection']
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
@@ -557,8 +553,7 @@ class ComplianceRiskReferralAdmin(admin.ModelAdmin):
     
     open_risk_assessment_dashboard.short_description = '🎯 Open Risk Assessment Dashboard'
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     fieldsets = (
         ('Risk Assessment Information', {
@@ -712,8 +707,7 @@ class EnforcementRecoveryAdmin(admin.ModelAdmin):
     search_fields = ['case_id', 'gstin', 'taxpayer_name']
     list_per_page = 20
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
@@ -742,8 +736,7 @@ class EnforcementRecoveryAdmin(admin.ModelAdmin):
     
     actions = ['auto_create_non_filing_cases', 'auto_create_non_payment_cases']
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
     
     def auto_create_non_filing_cases(self, request, queryset):
         """Auto-create cases for non-filers from compliance monitoring"""

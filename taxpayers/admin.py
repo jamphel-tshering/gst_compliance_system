@@ -265,10 +265,6 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
             # Creating a new taxpayer - ensure it's marked as primary license
             obj.is_primary_license = True
         super().save_model(request, obj, form, change)
-    
-    def changelist_view(self, request, extra_context=None):
-        """Override to avoid template context issues"""
-        return super().changelist_view(request, extra_context)
 
 
 @admin.register(MultipleLicenseReference)

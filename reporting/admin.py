@@ -10,8 +10,7 @@ class ReportTemplateAdmin(admin.ModelAdmin):
     list_filter = ['category', 'report_type', 'is_active', 'is_public']
     search_fields = ['name', 'description']
     
-    def changelist_view(self, request, extra_context=None):
-        return super().changelist_view(request, extra_context)
+
 
 
 @admin.register(GeneratedReport)
