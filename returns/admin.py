@@ -63,24 +63,26 @@ class GSTReturnForm(forms.ModelForm):
             })
     
     def clean_return_due_date(self):
-        """Convert DD-MM-YYYY string to date object"""
+        """Validate DD-MM-YYYY format"""
         date_str = self.cleaned_data.get('return_due_date')
         if date_str:
             try:
-                return datetime.strptime(date_str, '%d-%m-%Y').date()
+                # Just validate the format, don't convert to date object
+                datetime.strptime(date_str, '%d-%m-%Y')
             except ValueError:
                 raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 20-02-2026)')
-        return None
+        return date_str
     
     def clean_return_filing_date(self):
-        """Convert DD-MM-YYYY string to date object"""
+        """Validate DD-MM-YYYY format"""
         date_str = self.cleaned_data.get('return_filing_date')
         if date_str:
             try:
-                return datetime.strptime(date_str, '%d-%m-%Y').date()
+                # Just validate the format, don't convert to date object
+                datetime.strptime(date_str, '%d-%m-%Y')
             except ValueError:
                 raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
-        return None
+        return date_str
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -153,6 +155,24 @@ class GSTReturnAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         """Handle automations when saving GST return"""
         
+        # Convert date strings to date objects for calculations (but keep as strings for storage)
+        from datetime import datetime
+        
+        return_due_date_obj = None
+        return_filing_date_obj = None
+        
+        if obj.return_due_date and isinstance(obj.return_due_date, str):
+            try:
+                return_due_date_obj = datetime.strptime(obj.return_due_date, '%d-%m-%Y').date()
+            except ValueError:
+                pass
+        
+        if obj.return_filing_date and isinstance(obj.return_filing_date, str):
+            try:
+                return_filing_date_obj = datetime.strptime(obj.return_filing_date, '%d-%m-%Y').date()
+            except ValueError:
+                pass
+        
         # Auto-fetch taxpayer information when GSTIN is entered
         if obj.gstin and not change:
             taxpayer = get_taxpayer_by_gstin(obj.gstin)
@@ -166,11 +186,13 @@ class GSTReturnAdmin(admin.ModelAdmin):
         
         # Auto-calculate return due date based on tax period
         if obj.tax_period and not obj.return_due_date:
-            obj.return_due_date = calculate_tax_period_due_date(obj.tax_period)
+            due_date = calculate_tax_period_due_date(obj.tax_period)
+            if due_date:
+                obj.return_due_date = due_date.strftime('%d-%m-%Y')
         
         # Auto-calculate filing delay
-        if obj.return_filing_date and obj.return_due_date:
-            obj.filing_delay_days = calculate_filing_delay(obj.return_filing_date, obj.return_due_date)
+        if return_filing_date_obj and return_due_date_obj:
+            obj.filing_delay_days = calculate_filing_delay(return_filing_date_obj, return_due_date_obj)
         
         # Auto-calculate GST values
         calculations = calculate_gst_calculations(

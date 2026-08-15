@@ -71,8 +71,8 @@ class GSTReturn(models.Model):
     
     # Period Information
     tax_period = models.CharField(max_length=20, verbose_name='Tax Period')
-    return_due_date = models.DateField(null=True, blank=True, verbose_name='Return Due Date')
-    return_filing_date = models.DateField(null=True, blank=True, verbose_name='Return Filing Date')
+    return_due_date = models.CharField(max_length=20, null=True, blank=True, verbose_name='Return Due Date')
+    return_filing_date = models.CharField(max_length=20, null=True, blank=True, verbose_name='Return Filing Date')
     filing_delay_days = models.IntegerField(default=0, null=True, blank=True, verbose_name='Filing Delay (Days)')
     
     # Taxpayer Information

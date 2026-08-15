@@ -52,6 +52,12 @@ def calculate_filing_delay(return_filing_date, return_due_date):
     Returns positive number if late, 0 if on time
     """
     try:
+        # Handle both date objects and date strings
+        if isinstance(return_filing_date, str):
+            return_filing_date = datetime.strptime(return_filing_date, '%d-%m-%Y').date()
+        if isinstance(return_due_date, str):
+            return_due_date = datetime.strptime(return_due_date, '%d-%m-%Y').date()
+            
         if return_filing_date and return_due_date:
             delay = (return_filing_date - return_due_date).days
             return max(0, delay)  # Only count late days
