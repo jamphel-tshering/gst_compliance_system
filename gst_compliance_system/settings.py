@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     
     # Third-party apps
     'crispy_forms',
-    'import_export',
     'rest_framework',
     'corsheaders',
     'django_filters',
