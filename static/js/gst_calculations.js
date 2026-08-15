@@ -24,6 +24,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalITCClaimed = document.getElementById('id_total_itc_claimed');
     const gstPayableRefundable = document.getElementById('id_gst_payable_refundable');
     
+    // Initialize Flatpickr date picker for date fields
+    let dueDatePicker = null;
+    let filingDatePicker = null;
+    
+    if (returnDueDate) {
+        dueDatePicker = flatpickr(returnDueDate, {
+            dateFormat: 'd-m-Y',
+            allowInput: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                calculateFilingDelay();
+            }
+        });
+    }
+    
+    if (returnFilingDate) {
+        filingDatePicker = flatpickr(returnFilingDate, {
+            dateFormat: 'd-m-Y',
+            allowInput: true,
+            onChange: function(selectedDates, dateStr, instance) {
+                calculateFilingDelay();
+            }
+        });
+    }
+    
     // Function to auto-fetch taxpayer information
     function fetchTaxpayerInfo() {
         if (!gstin?.value || gstin.value.length < 3) return;
@@ -110,7 +134,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const yearNum = dueDate.getFullYear();
         const formattedDate = `${day}-${monthNum}-${yearNum}`;
         
-        if (returnDueDate) returnDueDate.value = formattedDate;
+        if (returnDueDate) {
+            returnDueDate.value = formattedDate;
+            // Update Flatpickr instance if it exists
+            if (dueDatePicker) {
+                dueDatePicker.setDate(dueDate);
+            }
+        }
         console.log('Calculated due date:', formattedDate);
     }
     
