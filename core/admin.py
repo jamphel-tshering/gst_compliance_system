@@ -8,44 +8,95 @@ from django.contrib.admin import AdminSite
 
 # Main Dashboard View
 def main_dashboard(request):
-    """Main dashboard with links to all module dashboards"""
-    dashboard_links = [
-        {
-            'title': 'Taxpayer Management',
+    """Main dashboard with live statistics and dashboards for all modules"""
+    from taxpayers.models import TaxpayerMaster
+    from returns.models import GSTReturn
+    from compliance.models import ComplianceMonitoring, ComplianceRiskReferral
+    from audit_refund.models import AuditCase, RefundRegister
+    
+    # Taxpayer Statistics
+    total_taxpayers = TaxpayerMaster.objects.filter(is_primary_license=True).count()
+    active_taxpayers = TaxpayerMaster.objects.filter(status='Active', is_primary_license=True).count()
+    inactive_taxpayers = TaxpayerMaster.objects.filter(status='Inactive', is_primary_license=True).count()
+    
+    # GST Returns Statistics
+    total_returns = GSTReturn.objects.count()
+    filed_returns = GSTReturn.objects.filter(filing_status='Filed').count()
+    pending_returns = GSTReturn.objects.filter(filing_status='Pending').count()
+    overdue_returns = GSTReturn.objects.filter(filing_status='Overdue / Non-Filer').count()
+    
+    # Compliance Statistics
+    total_compliance = ComplianceMonitoring.objects.count()
+    compliant_count = ComplianceMonitoring.objects.filter(compliance_status='Compliant').count()
+    non_compliant_count = ComplianceMonitoring.objects.filter(compliance_status__in=['Non-Filer', 'Late Filer', 'Payment Default']).count()
+    
+    # Risk Assessment Statistics
+    total_risk = ComplianceRiskReferral.objects.count()
+    high_risk = ComplianceRiskReferral.objects.filter(risk_level='High').count()
+    medium_risk = ComplianceRiskReferral.objects.filter(risk_level='Medium').count()
+    low_risk = ComplianceRiskReferral.objects.filter(risk_level='Low').count()
+    
+    # Audit Statistics
+    total_audits = AuditCase.objects.count()
+    open_audits = AuditCase.objects.filter(status='Open').count()
+    completed_audits = AuditCase.objects.filter(status='Completed').count()
+    
+    # Refund Statistics
+    total_refunds = RefundRegister.objects.count()
+    pending_refunds = RefundRegister.objects.filter(status='Pending').count()
+    approved_refunds = RefundRegister.objects.filter(status='Approved').count()
+    
+    dashboard_stats = {
+        'taxpayers': {
+            'total': total_taxpayers,
+            'active': active_taxpayers,
+            'inactive': inactive_taxpayers,
             'url': '/admin/taxpayers/taxpayermaster/',
-            'description': 'Manage taxpayer registration and profiles',
             'icon': '👥'
         },
-        {
-            'title': 'GST Returns',
+        'returns': {
+            'total': total_returns,
+            'filed': filed_returns,
+            'pending': pending_returns,
+            'overdue': overdue_returns,
             'url': '/admin/returns/gstreturn/',
-            'description': 'Process and monitor GST returns',
             'icon': '📋'
         },
-        {
-            'title': 'Compliance Monitoring',
+        'compliance': {
+            'total': total_compliance,
+            'compliant': compliant_count,
+            'non_compliant': non_compliant_count,
             'url': '/admin/compliance/compliancemonitoring/',
-            'description': 'Compliance monitoring, risk assessment, and enforcement',
             'icon': '✅'
         },
-        {
-            'title': 'Audit & Refund',
+        'risk': {
+            'total': total_risk,
+            'high': high_risk,
+            'medium': medium_risk,
+            'low': low_risk,
+            'url': '/compliance/compliance_risk_dashboard/',
+            'icon': '🎯'
+        },
+        'audit': {
+            'total': total_audits,
+            'open': open_audits,
+            'completed': completed_audits,
             'url': '/admin/audit_refund/auditcase/',
-            'description': 'Audit case management and refund processing',
             'icon': '🔍'
         },
-        {
-            'title': 'Reporting',
-            'url': '/admin/reporting/reporttemplate/',
-            'description': 'Centralized Reporting and Analytics Layer',
-            'icon': '📊'
+        'refund': {
+            'total': total_refunds,
+            'pending': pending_refunds,
+            'approved': approved_refunds,
+            'url': '/admin/audit_refund/refundregister/',
+            'icon': '�'
         },
-    ]
+    }
     
     context = {
         'title': 'RRCO/GST Mongar Administration',
         'subtitle': 'Main Dashboard',
-        'dashboard_links': dashboard_links,
+        'dashboard_stats': dashboard_stats,
     }
     
     return render(request, 'core/main_dashboard.html', context)
