@@ -50,12 +50,15 @@ class GSTReturnForm(forms.ModelForm):
         if 'tax_period' in self.fields:
             self.fields['tax_period'].widget = TaxPeriodSelect()
             self.fields['tax_period'].required = True
+            print(f"Tax period widget set: {self.fields['tax_period'].widget}")
         
         # Add date widgets for date fields
         if 'return_due_date' in self.fields:
             self.fields['return_due_date'].widget = CustomDateInput()
+            print(f"Return due date widget set: {self.fields['return_due_date'].widget}")
         if 'return_filing_date' in self.fields:
             self.fields['return_filing_date'].widget = CustomDateInput()
+            print(f"Return filing date widget set: {self.fields['return_filing_date'].widget}")
         
         # Add dropdown choices for filing status
         FILING_STATUS_CHOICES = [
@@ -69,6 +72,7 @@ class GSTReturnForm(forms.ModelForm):
             self.fields['filing_status'].choices = FILING_STATUS_CHOICES
             self.fields['filing_status'].required = False
             self.fields['filing_status'].empty_label = None
+            print(f"Filing status choices set: {self.fields['filing_status'].choices}")
         
         # Add dropdown choices for payment status
         PAYMENT_STATUS_CHOICES = [
@@ -82,6 +86,7 @@ class GSTReturnForm(forms.ModelForm):
             self.fields['payment_status'].choices = PAYMENT_STATUS_CHOICES
             self.fields['payment_status'].required = False
             self.fields['payment_status'].empty_label = None
+            print(f"Payment status choices set: {self.fields['payment_status'].choices}")
 
 def get_display_value(obj, field_name):
     """Helper function to get display value for choice fields"""
