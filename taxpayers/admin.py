@@ -5,6 +5,7 @@ from django.forms import DateInput
 from django.http import JsonResponse
 from django.urls import path
 from .models import TaxpayerMaster, MultipleLicenseReference, TaxpayerEnquiry
+from core.form_widgets import CustomDateInput
 
 
 class AllStatusFilter(admin.SimpleListFilter):
@@ -267,15 +268,9 @@ class TaxpayerMasterAdmin(admin.ModelAdmin):
 @admin.register(MultipleLicenseReference)
 class MultipleLicenseAdmin(admin.ModelAdmin):
     """Admin for Secondary Licenses - separate section for reference purposes"""
-    list_display = ['gstin', 'display_ramis_tpn', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'sector', 'sub_sector', 'business_activity', 'organisation_type', 'frequency', 'dzongkhag', 'status', 'display_registration_date', 'display_commencement_date', 'display_deregistration_date', 'email_address', 'mobile_number', 'display_business_address', 'remarks']
-
-
-@admin.register(MultipleLicenseReference)
-class MultipleLicenseAdmin(admin.ModelAdmin):
-    """Admin for Secondary Licenses - separate section for reference purposes"""
-    list_display = ['gstin', 'display_ramis_tpn', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'sector', 'sub_sector', 'business_activity', 'organisation_type', 'frequency', 'dzongkhag', 'status', 'display_registration_date', 'display_commencement_date', 'display_deregistration_date', 'email_address', 'mobile_number', 'display_business_address', 'remarks']
+    list_display = ['gstin', 'display_ramis_tpn', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'sector', 'sub_sector', 'business_activity', 'dzongkhag', 'status', 'display_registration_date', 'display_commencement_date', 'display_deregistration_date', 'email_address', 'mobile_number', 'display_business_address', 'remarks']
     list_display_links = ['gstin', 'taxpayer_name']
-    list_filter = ['organisation_type', 'dzongkhag', 'status', 'frequency', 'registration_date']
+    list_filter = ['dzongkhag', 'status', 'registration_date']
     search_fields = ['gstin', 'license_number', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'ramis_tpn']
     list_per_page = 20  # Show 20 records per page with pagination
     show_full_result_count = False  # Hide filter counts
@@ -382,9 +377,8 @@ class TaxpayerEnquiryForm(forms.ModelForm):
             self.fields['other_details'].required = False
         
         # Add date widget for enquiry_date and resolved_date
-        from django.forms import DateInput
         if 'enquiry_date' in self.fields:
-            self.fields['enquiry_date'].widget = DateInput(attrs={'type': 'date'})
+            self.fields['enquiry_date'].widget = CustomDateInput()
             # Set initial value if instance exists and has date
             if self.instance and getattr(self.instance, 'enquiry_date'):
                 from datetime import datetime
@@ -393,7 +387,7 @@ class TaxpayerEnquiryForm(forms.ModelForm):
                     formatted_date = date_value.strftime('%Y-%m-%d')
                     self.fields['enquiry_date'].initial = formatted_date
         if 'resolved_date' in self.fields:
-            self.fields['resolved_date'].widget = DateInput(attrs={'type': 'date'})
+            self.fields['resolved_date'].widget = CustomDateInput()
             # Set initial value if instance exists and has date
             if self.instance and getattr(self.instance, 'resolved_date'):
                 from datetime import datetime
@@ -401,6 +395,11 @@ class TaxpayerEnquiryForm(forms.ModelForm):
                 if date_value:
                     formatted_date = date_value.strftime('%Y-%m-%d')
                     self.fields['resolved_date'].initial = formatted_date
+        
+        # Fix officer dropdown to show only name instead of email
+        if 'assigned_to' in self.fields:
+            self.fields['assigned_to'].queryset = self.fields['assigned_to'].queryset
+            self.fields['assigned_to'].label_from_instance = lambda obj: obj.get_full_name() if obj else ''
 
 
 @admin.register(TaxpayerEnquiry)

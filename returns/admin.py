@@ -1,19 +1,10 @@
 from django.contrib import admin
 from django import forms
-from django.forms import DateInput
 from django.contrib.admin import SimpleListFilter
 from datetime import datetime, date
 from .models import GSTReturn
-
-
-# Custom date input widget for dd-mm-yyyy format
-class CustomDateInput(DateInput):
-    input_type = 'date'
-    def __init__(self, attrs=None):
-        default_attrs = {'type': 'date'}
-        if attrs:
-            default_attrs.update(attrs)
-        super().__init__(attrs=default_attrs)
+from core.form_widgets import CustomDateInput, TaxPeriodSelect
+from core.helper_functions import get_taxpayer_by_gstin, calculate_tax_period_due_date, calculate_filing_delay, calculate_gst_calculations
 
 
 
@@ -47,51 +38,50 @@ class TaxPeriodFilter(SimpleListFilter):
 
 
 class GSTReturnForm(forms.ModelForm):
-    """Custom form with tax period dropdown"""
+    """Custom form with tax period dropdown and auto-calculations"""
     class Meta:
         model = GSTReturn
         fields = '__all__'
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Set tax period choices
-        TAX_PERIOD_CHOICES = [
-            ('Jan-2026', 'Jan-2026'),
-            ('Feb-2026', 'Feb-2026'),
-            ('Mar-2026', 'Mar-2026'),
-            ('Apr-2026', 'Apr-2026'),
-            ('May-2026', 'May-2026'),
-            ('Jun-2026', 'Jun-2026'),
-            ('Jul-2026', 'Jul-2026'),
-            ('Aug-2026', 'Aug-2026'),
-            ('Sep-2026', 'Sep-2026'),
-            ('Oct-2026', 'Oct-2026'),
-            ('Nov-2026', 'Nov-2026'),
-            ('Dec-2026', 'Dec-2026'),
-            ('Jan-2027', 'Jan-2027'),
-            ('Feb-2027', 'Feb-2027'),
-            ('Mar-2027', 'Mar-2027'),
-            ('Apr-2027', 'Apr-2027'),
-            ('May-2027', 'May-2027'),
-            ('Jun-2027', 'Jun-2027'),
-            ('Jul-2027', 'Jul-2027'),
-            ('Aug-2027', 'Aug-2027'),
-            ('Sep-2027', 'Sep-2027'),
-            ('Oct-2027', 'Oct-2027'),
-            ('Nov-2027', 'Nov-2027'),
-            ('Dec-2027', 'Dec-2027'),
-        ]
         
+        # Set tax period dropdown with custom widget
         if 'tax_period' in self.fields:
-            self.fields['tax_period'].choices = TAX_PERIOD_CHOICES
+            self.fields['tax_period'].widget = TaxPeriodSelect()
             self.fields['tax_period'].required = True
         
         # Add date widgets for date fields
-        from django.forms import DateInput
         if 'return_due_date' in self.fields:
-            self.fields['return_due_date'].widget = DateInput(attrs={'type': 'date'})
+            self.fields['return_due_date'].widget = CustomDateInput()
         if 'return_filing_date' in self.fields:
-            self.fields['return_filing_date'].widget = DateInput(attrs={'type': 'date'})
+            self.fields['return_filing_date'].widget = CustomDateInput()
+        
+        # Add dropdown choices for filing status
+        FILING_STATUS_CHOICES = [
+            ('Filed', 'Filed'),
+            ('Overdue / Non-Filer', 'Overdue / Non-Filer'),
+            ('Late Filer', 'Late Filer'),
+            ('Pending', 'Pending'),
+        ]
+        
+        if 'filing_status' in self.fields:
+            self.fields['filing_status'].choices = FILING_STATUS_CHOICES
+            self.fields['filing_status'].required = False
+            self.fields['filing_status'].empty_label = None
+        
+        # Add dropdown choices for payment status
+        PAYMENT_STATUS_CHOICES = [
+            ('Paid', 'Paid'),
+            ('Not paid', 'Not paid'),
+            ('Partial Payment', 'Partial Payment'),
+            ('Pending', 'Pending'),
+        ]
+        
+        if 'payment_status' in self.fields:
+            self.fields['payment_status'].choices = PAYMENT_STATUS_CHOICES
+            self.fields['payment_status'].required = False
+            self.fields['payment_status'].empty_label None
 
 def get_display_value(obj, field_name):
     """Helper function to get display value for choice fields"""
@@ -115,6 +105,44 @@ def get_display_value(obj, field_name):
 @admin.register(GSTReturn)
 class GSTReturnAdmin(admin.ModelAdmin):
     form = GSTReturnForm
+    
+    def save_model(self, request, obj, form, change):
+        """Handle automations when saving GST return"""
+        
+        # Auto-fetch taxpayer information when GSTIN is entered
+        if obj.gstin and not change:
+            taxpayer = get_taxpayer_by_gstin(obj.gstin)
+            if taxpayer:
+                # Auto-fill taxpayer information
+                obj.taxpayer_name = taxpayer.taxpayer_name
+                obj.business_name = taxpayer.business_name
+                obj.dzongkhag = taxpayer.dzongkhag
+                obj.organisation_type = taxpayer.organisation_type
+                obj.frequency = taxpayer.frequency
+        
+        # Auto-calculate return due date based on tax period
+        if obj.tax_period and not obj.return_due_date:
+            obj.return_due_date = calculate_tax_period_due_date(obj.tax_period)
+        
+        # Auto-calculate filing delay
+        if obj.return_filing_date and obj.return_due_date:
+            obj.filing_delay_days = calculate_filing_delay(obj.return_filing_date, obj.return_due_date)
+        
+        # Auto-calculate GST values
+        calculations = calculate_gst_calculations(
+            obj.declared_sales,
+            obj.declared_import_value,
+            obj.declared_domestic_purchase
+        )
+        
+        # Set calculated values
+        obj.declared_import_gst = calculations['declared_import_gst']
+        obj.domestic_purchase_itc_claimed = calculations['domestic_purchase_itc_claimed']
+        obj.declared_output_gst = calculations['declared_output_gst']
+        obj.total_itc_claimed = calculations['total_itc_claimed']
+        obj.gst_payable_refundable = calculations['gst_payable_refundable']
+        
+        super().save_model(request, obj, form, change)
     list_display = ['display_tax_period', 'gstin', 'taxpayer_name', 'dzongkhag', 'display_organisation_type', 'display_frequency', 'declared_sales', 'declared_domestic_purchase', 'declared_import_value', 'declared_import_gst', 'domestic_purchase_itc_claimed', 'total_itc_claimed', 'declared_output_gst', 'gst_payable_refundable', 'actual_gst_payment_received', 'display_return_due_date', 'display_return_filing_date', 'display_filing_status', 'display_payment_status', 'display_compliance_status', 'remarks']
     list_filter = [TaxPeriodFilter, 'filing_status', 'payment_status', 'compliance_status', 'organisation_type', 'dzongkhag']
     search_fields = ['gstin', 'taxpayer_name']
