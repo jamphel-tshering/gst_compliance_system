@@ -799,7 +799,7 @@ class EnforcementRecoveryForm(forms.ModelForm):
         ]
         
         if 'tax_period' in self.fields:
-            self.fields['tax_period'].choices = TAX_PERIOD_CHOICES
+            self.fields['tax_period'].widget = TaxPeriodSelect()
             self.fields['tax_period'].required = False
             self.fields['tax_period'].empty_label = '---'
         
