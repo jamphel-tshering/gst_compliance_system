@@ -81,7 +81,7 @@ class GSTReturnForm(forms.ModelForm):
         if 'payment_status' in self.fields:
             self.fields['payment_status'].choices = PAYMENT_STATUS_CHOICES
             self.fields['payment_status'].required = False
-            self.fields['payment_status'].empty_label None
+            self.fields['payment_status'].empty_label = None
 
 def get_display_value(obj, field_name):
     """Helper function to get display value for choice fields"""
