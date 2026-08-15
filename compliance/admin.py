@@ -1,7 +1,6 @@
 from django.contrib import admin, messages
 from django.db.models import Count, Q, Sum
 from django import forms
-from django.forms import DateInput, ModelChoiceField
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -9,16 +8,8 @@ from .models import ComplianceMonitoring, ComplianceRiskReferral, EnforcementRec
 from returns.models import GSTReturn
 from taxpayers.models import TaxpayerMaster
 from core.models import User
-
-
-# Custom date input widget for dd-mm-yyyy format
-class CustomDateInput(DateInput):
-    input_type = 'date'
-    def __init__(self, attrs=None):
-        default_attrs = {'type': 'date'}
-        if attrs:
-            default_attrs.update(attrs)
-        super().__init__(attrs=default_attrs)
+from core.form_widgets import CustomDateInput, TaxPeriodSelect
+from core.helper_functions import get_taxpayer_by_gstin
 
 
 # Dashboard view for Compliance & Enforcement module
@@ -123,9 +114,39 @@ class ComplianceMonitoringForm(forms.ModelForm):
         ]
         
         if 'tax_period' in self.fields:
-            self.fields['tax_period'].choices = TAX_PERIOD_CHOICES
+            self.fields['tax_period'].widget = TaxPeriodSelect()
             self.fields['tax_period'].required = True
             self.fields['tax_period'].empty_label = None
+        
+        # Add date widget for assessment_date
+        if 'assessment_date' in self.fields:
+            self.fields['assessment_date'].widget = CustomDateInput()
+        
+        # Add dropdown choices for filing status
+        FILING_STATUS_CHOICES = [
+            ('Filed', 'Filed'),
+            ('Overdue / Non-Filer', 'Overdue / Non-Filer'),
+            ('Late Filer', 'Late Filer'),
+            ('Pending', 'Pending'),
+        ]
+        
+        if 'filing_status' in self.fields:
+            self.fields['filing_status'].choices = FILING_STATUS_CHOICES
+            self.fields['filing_status'].required = False
+            self.fields['filing_status'].empty_label = None
+        
+        # Add dropdown choices for payment status
+        PAYMENT_STATUS_CHOICES = [
+            ('Paid', 'Paid'),
+            ('Not paid', 'Not paid'),
+            ('Partial Payment', 'Partial Payment'),
+            ('Pending', 'Pending'),
+        ]
+        
+        if 'payment_status' in self.fields:
+            self.fields['payment_status'].choices = PAYMENT_STATUS_CHOICES
+            self.fields['payment_status'].required = False
+            self.fields['payment_status'].empty_label = None
 
 
 @admin.register(ComplianceMonitoring)
@@ -378,9 +399,39 @@ class ComplianceRiskReferralForm(forms.ModelForm):
                     self.initial['assessment_to_period'] = self.instance.assessment_to_period
         
         if 'tax_period' in self.fields:
-            self.fields['tax_period'].choices = TAX_PERIOD_CHOICES
+            self.fields['tax_period'].widget = TaxPeriodSelect()
             self.fields['tax_period'].required = True
             self.fields['tax_period'].empty_label = None
+        
+        # Add date widget for assessment_date
+        if 'assessment_date' in self.fields:
+            self.fields['assessment_date'].widget = CustomDateInput()
+        
+        # Add dropdown choices for filing status
+        FILING_STATUS_CHOICES = [
+            ('Filed', 'Filed'),
+            ('Overdue / Non-Filer', 'Overdue / Non-Filer'),
+            ('Late Filer', 'Late Filer'),
+            ('Pending', 'Pending'),
+        ]
+        
+        if 'filing_status' in self.fields:
+            self.fields['filing_status'].choices = FILING_STATUS_CHOICES
+            self.fields['filing_status'].required = False
+            self.fields['filing_status'].empty_label = None
+        
+        # Add dropdown choices for payment status
+        PAYMENT_STATUS_CHOICES = [
+            ('Paid', 'Paid'),
+            ('Not paid', 'Not paid'),
+            ('Partial Payment', 'Partial Payment'),
+            ('Pending', 'Pending'),
+        ]
+        
+        if 'payment_status' in self.fields:
+            self.fields['payment_status'].choices = PAYMENT_STATUS_CHOICES
+            self.fields['payment_status'].required = False
+            self.fields['payment_status'].empty_label = None
         
         # Make system-generated fields readonly
         if 'system_decision' in self.fields:
