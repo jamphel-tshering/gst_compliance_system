@@ -3,9 +3,7 @@ from django import forms
 from django.forms import DateInput
 from django.contrib.admin import SimpleListFilter
 from datetime import datetime, date
-from import_export.admin import ImportExportModelAdmin
 from .models import GSTReturn
-from .resources import GSTReturnResource
 
 
 # Custom date input widget for dd-mm-yyyy format

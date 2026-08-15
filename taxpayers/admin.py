@@ -4,9 +4,7 @@ from django import forms
 from django.forms import DateInput
 from django.http import JsonResponse
 from django.urls import path
-from import_export.admin import ImportExportModelAdmin
 from .models import TaxpayerMaster, MultipleLicenseReference, TaxpayerEnquiry
-from .resources import TaxpayerMasterResource, MultipleLicenseResource
 
 
 class AllStatusFilter(admin.SimpleListFilter):
