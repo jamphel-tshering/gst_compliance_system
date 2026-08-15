@@ -24,24 +24,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalITCClaimed = document.getElementById('id_total_itc_claimed');
     const gstPayableRefundable = document.getElementById('id_gst_payable_refundable');
     
-    // Initialize Flatpickr date picker for date fields
+    // Initialize Flatpickr date picker for date fields (if not already initialized)
     let dueDatePicker = null;
     let filingDatePicker = null;
     
-    if (returnDueDate) {
+    if (returnDueDate && !returnDueDate._flatpickr) {
         dueDatePicker = flatpickr(returnDueDate, {
             dateFormat: 'd-m-Y',
             allowInput: true,
+            parseDate: function(datestr, format) {
+                // Parse DD-MM-YYYY format
+                const parts = datestr.split('-');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                        return new Date(year, month, day);
+                    }
+                }
+                return null;
+            },
             onChange: function(selectedDates, dateStr, instance) {
                 calculateFilingDelay();
             }
         });
     }
     
-    if (returnFilingDate) {
+    if (returnFilingDate && !returnFilingDate._flatpickr) {
         filingDatePicker = flatpickr(returnFilingDate, {
             dateFormat: 'd-m-Y',
             allowInput: true,
+            parseDate: function(datestr, format) {
+                // Parse DD-MM-YYYY format
+                const parts = datestr.split('-');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const year = parseInt(parts[2], 10);
+                    if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                        return new Date(year, month, day);
+                    }
+                }
+                return null;
+            },
             onChange: function(selectedDates, dateStr, instance) {
                 calculateFilingDelay();
             }

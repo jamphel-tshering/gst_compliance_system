@@ -4,6 +4,7 @@ from django.contrib.admin import SimpleListFilter
 from datetime import datetime, date
 from .models import GSTReturn
 from core.form_widgets import CustomDateInput, TaxPeriodSelect
+from core.form_fields import CustomDateField
 from core.helper_functions import get_taxpayer_by_gstin, calculate_tax_period_due_date, calculate_filing_delay, calculate_gst_calculations
 
 
@@ -42,6 +43,18 @@ class GSTReturnForm(forms.ModelForm):
     class Meta:
         model = GSTReturn
         fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Override date fields with custom date field for DD-MM-YYYY validation
+        if 'return_due_date' in self.fields:
+            self.fields['return_due_date'] = CustomDateField(required=False)
+            self.fields['return_due_date'].widget = CustomDateInput()
+        
+        if 'return_filing_date' in self.fields:
+            self.fields['return_filing_date'] = CustomDateField(required=False)
+            self.fields['return_filing_date'].widget = CustomDateInput()
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
