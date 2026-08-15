@@ -62,20 +62,6 @@ def compliance_enforcement_dashboard(request):
     return render(request, 'compliance/admin_dashboard.html', context)
 
 
-class CustomDateInput(DateInput):
-    """Custom date input with calendar picker"""
-    input_type = 'date'
-    
-    def __init__(self, attrs=None):
-        if attrs is None:
-            attrs = {}
-        attrs.update({
-            'class': 'vDateField',
-            'type': 'date',
-        })
-        super().__init__(attrs=attrs)
-
-
 class ComplianceMonitoringForm(forms.ModelForm):
     """Custom form with date pickers"""
     class Meta:
