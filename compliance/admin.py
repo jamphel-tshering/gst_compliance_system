@@ -137,12 +137,8 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     
     def changelist_view(self, request, extra_context=None):
-        # Add dashboard link to changelist view
-        extra_context = extra_context or {}
-        extra_context['show_dashboard_link'] = True
-        extra_context['dashboard_url'] = '/admin/dashboard/'
-        extra_context['dashboard_title'] = 'Main Dashboard'
         return super().changelist_view(request, extra_context)
+    
     """Admin for Compliance & Enforcement - Simple table based on GST Returns"""
     form = ComplianceMonitoringForm
     list_display = ['compliance_id', 'tax_period', 'gstin', 'taxpayer_name', 'filing_status', 'filing_delay', 'payment_status', 'compliance_status', 'compliance_flag', 'remarks']
@@ -153,9 +149,6 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     date_hierarchy = 'assessment_date'
     
     def changelist_view(self, request, extra_context=None):
-        # Redirect to dashboard when accessing the root of compliance
-        if request.path == '/admin/compliance/':
-            return compliance_enforcement_dashboard(request)
         return super().changelist_view(request, extra_context)
     
     fieldsets = (
@@ -178,38 +171,7 @@ class ComplianceMonitoringAdmin(admin.ModelAdmin):
     actions = ['auto_populate_from_returns', 'recalculate_compliance_status']
     
     def changelist_view(self, request, extra_context=None):
-        """Override to show Compliance & Enforcement dashboard"""
-        response = super().changelist_view(request, extra_context)
-        
-        # Calculate compliance statistics
-        queryset = self.get_queryset(request)
-        total_monitored = queryset.count()
-        compliant_count = queryset.filter(compliance_status='Compliant').count()
-        late_filer_count = queryset.filter(compliance_status='Late Filer').count()
-        non_filer_count = queryset.filter(compliance_status='Non-Filer').count()
-        payment_default_count = queryset.filter(compliance_status='Payment Default').count()
-        other_non_compliance_count = queryset.filter(compliance_status='Other Non-Compliance').count()
-        
-        # Compliance flag breakdown
-        green_count = queryset.filter(compliance_flag='Green').count()
-        yellow_count = queryset.filter(compliance_flag='Yellow').count()
-        red_count = queryset.filter(compliance_flag='Red').count()
-        
-        # Add to context
-        extra_context = extra_context or {}
-        extra_context.update({
-            'total_monitored': total_monitored,
-            'compliant_count': compliant_count,
-            'late_filer_count': late_filer_count,
-            'non_filer_count': non_filer_count,
-            'payment_default_count': payment_default_count,
-            'other_non_compliance_count': other_non_compliance_count,
-            'green_count': green_count,
-            'yellow_count': yellow_count,
-            'red_count': red_count,
-        })
-        
-        return response
+        return super().changelist_view(request, extra_context)
     
     def auto_populate_from_returns(self, request, queryset):
         """Auto-populate compliance from GST Returns"""
@@ -475,20 +437,9 @@ class ComplianceRiskReferralAdmin(admin.ModelAdmin):
     """Admin for Compliance Risk & Referral - Period-based risk assessment with officer judgment"""
     form = ComplianceRiskReferralForm
     list_display = ['risk_id', 'formatted_assessment_from_period', 'gstin', 'taxpayer_name', 'risk_level', 'system_decision', 'assessor', 'assignment_status', 'final_selection']
-    change_list_template = 'compliance/compliance_risk_referral_changelist.html'
     
     def changelist_view(self, request, extra_context=None):
-        # Add dashboard link to changelist view
-        extra_context = extra_context or {}
-        extra_context['show_dashboard_link'] = True
-        extra_context['dashboard_url'] = '/admin/dashboard/'
-        extra_context['dashboard_title'] = 'Main Dashboard'
         return super().changelist_view(request, extra_context)
-    
-    def formfield_for_dbfield(self, db_field, **kwargs):
-        if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
-            kwargs['widget'] = CustomDateInput()
-        return super().formfield_for_dbfield(db_field, **kwargs)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
@@ -607,70 +558,6 @@ class ComplianceRiskReferralAdmin(admin.ModelAdmin):
     open_risk_assessment_dashboard.short_description = '🎯 Open Risk Assessment Dashboard'
     
     def changelist_view(self, request, extra_context=None):
-        """Override to show Compliance Risk dashboard using raw queries to avoid decimal errors"""
-        from django.db import connection
-        
-        # Calculate risk statistics using raw queries
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral")
-            total_assessed = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE risk_level = 'Low'")
-            low_risk_count = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE risk_level = 'Medium'")
-            medium_risk_count = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE risk_level = 'High'")
-            high_risk_count = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE risk_level = 'Critical'")
-            critical_risk_count = cursor.fetchone()[0]
-            
-            # Selection statistics
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE system_decision = 'AUDIT'")
-            audit_selected = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE system_decision = 'REVIEW'")
-            review_selected = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE system_decision = 'MONITOR'")
-            monitor_selected = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE system_decision = 'NOT SELECTED'")
-            not_selected = cursor.fetchone()[0]
-            
-            # Action status
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE action_status = 'Pending'")
-            pending_actions = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE action_status = 'Assigned'")
-            assigned_actions = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE action_status = 'In Progress'")
-            in_progress_actions = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(*) FROM compliance_complianceriskreferral WHERE action_status = 'Completed'")
-            completed_actions = cursor.fetchone()[0]
-        
-        # Add to context
-        extra_context = extra_context or {}
-        extra_context.update({
-            'total_assessed': total_assessed,
-            'low_risk_count': low_risk_count,
-            'medium_risk_count': medium_risk_count,
-            'high_risk_count': high_risk_count,
-            'critical_risk_count': critical_risk_count,
-            'audit_selected': audit_selected,
-            'review_selected': review_selected,
-            'monitor_selected': monitor_selected,
-            'not_selected': not_selected,
-            'pending_actions': pending_actions,
-            'assigned_actions': assigned_actions,
-            'in_progress_actions': in_progress_actions,
-            'completed_actions': completed_actions,
-        })
-        
         return super().changelist_view(request, extra_context)
     
     fieldsets = (
@@ -826,11 +713,6 @@ class EnforcementRecoveryAdmin(admin.ModelAdmin):
     list_per_page = 20
     
     def changelist_view(self, request, extra_context=None):
-        # Add dashboard link to changelist view
-        extra_context = extra_context or {}
-        extra_context['show_dashboard_link'] = True
-        extra_context['dashboard_url'] = '/admin/dashboard/'
-        extra_context['dashboard_title'] = 'Main Dashboard'
         return super().changelist_view(request, extra_context)
     
     def formfield_for_dbfield(self, db_field, **kwargs):
@@ -861,44 +743,7 @@ class EnforcementRecoveryAdmin(admin.ModelAdmin):
     actions = ['auto_create_non_filing_cases', 'auto_create_non_payment_cases']
     
     def changelist_view(self, request, extra_context=None):
-        """Override to show enforcement dashboard"""
-        response = super().changelist_view(request, extra_context)
-        
-        # Calculate enforcement statistics
-        queryset = self.get_queryset(request)
-        total_cases = queryset.count()
-        open_cases = queryset.filter(status='Open').count()
-        follow_up_cases = queryset.filter(status='Follow-up').count()
-        recovered_cases = queryset.filter(status='Recovered').count()
-        closed_cases = queryset.filter(status='Closed').count()
-        
-        # Case type breakdown
-        non_filing_cases = queryset.filter(case_type='Non-Filing').count()
-        non_payment_cases = queryset.filter(case_type='Non-Payment').count()
-        recovery_cases = queryset.filter(case_type='Recovery').count()
-        other_cases = queryset.filter(case_type='Other').count()
-        
-        # Financial summary
-        total_amount_due = queryset.aggregate(total=Sum('amount_due'))['total'] or 0
-        total_amount_recovered = queryset.aggregate(total=Sum('amount_recovered'))['total'] or 0
-        
-        # Add to context
-        extra_context = extra_context or {}
-        extra_context.update({
-            'total_cases': total_cases,
-            'open_cases': open_cases,
-            'follow_up_cases': follow_up_cases,
-            'recovered_cases': recovered_cases,
-            'closed_cases': closed_cases,
-            'non_filing_cases': non_filing_cases,
-            'non_payment_cases': non_payment_cases,
-            'recovery_cases': recovery_cases,
-            'other_cases': other_cases,
-            'total_amount_due': total_amount_due,
-            'total_amount_recovered': total_amount_recovered,
-        })
-        
-        return response
+        return super().changelist_view(request, extra_context)
     
     def auto_create_non_filing_cases(self, request, queryset):
         """Auto-create cases for non-filers from compliance monitoring"""

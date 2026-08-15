@@ -185,15 +185,6 @@ class AuditCaseAdmin(admin.ModelAdmin):
         return super().formfield_for_dbfield(db_field, **kwargs)
     
     def changelist_view(self, request, extra_context=None):
-        # Add dashboard link to changelist view
-        extra_context = extra_context or {}
-        extra_context['show_dashboard_link'] = True
-        extra_context['dashboard_url'] = '/admin/dashboard/'
-        extra_context['dashboard_title'] = 'Main Dashboard'
-        
-        # Redirect to dashboard when accessing the root of audit_refund
-        if request.path == '/admin/audit_refund/':
-            return audit_refund_dashboard(request)
         return super().changelist_view(request, extra_context)
     
     # Use raw_id_fields to avoid dropdown decimal conversion issues
@@ -401,11 +392,6 @@ class RefundRegisterAdmin(ImportExportModelAdmin):
         return super().formfield_for_dbfield(db_field, **kwargs)
     
     def changelist_view(self, request, extra_context=None):
-        # Add dashboard link to changelist view
-        extra_context = extra_context or {}
-        extra_context['show_dashboard_link'] = True
-        extra_context['dashboard_url'] = '/admin/dashboard/'
-        extra_context['dashboard_title'] = 'Main Dashboard'
         return super().changelist_view(request, extra_context)
     
     def display_status(self, obj):

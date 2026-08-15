@@ -11,11 +11,6 @@ class ReportTemplateAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description']
     
     def changelist_view(self, request, extra_context=None):
-        # Add dashboard link to changelist view
-        extra_context = extra_context or {}
-        extra_context['show_dashboard_link'] = True
-        extra_context['dashboard_url'] = '/reports/'
-        extra_context['dashboard_title'] = 'Report Dashboard'
         return super().changelist_view(request, extra_context)
 
 
