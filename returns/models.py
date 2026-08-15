@@ -30,19 +30,17 @@ class GSTReturn(models.Model):
     )
     
     FILING_STATUS_CHOICES = (
-        ('Filed On Time', 'Filed On Time'),
-        ('Late Filer', 'Late Filer'),
-        ('Due', 'Due'),
+        ('Filed', 'Filed'),
         ('Overdue / Non-Filer', 'Overdue / Non-Filer'),
-        ('Extension', 'Extension'),
+        ('Late Filer', 'Late Filer'),
+        ('Pending', 'Pending'),
     )
     
     PAYMENT_STATUS_CHOICES = (
         ('Paid', 'Paid'),
         ('Not paid', 'Not paid'),
-        ('Credit', 'Credit'),
-        ('Zero Return', 'Zero Return'),
-        ('Reconciled Output Input', 'Reconciled Output Input'),
+        ('Partial Payment', 'Partial Payment'),
+        ('Pending', 'Pending'),
     )
     
     COMPLIANCE_STATUS_CHOICES = (
@@ -53,6 +51,8 @@ class GSTReturn(models.Model):
         ('Inactive Taxpayer', 'Inactive Taxpayer'),
         ('Unknown Taxpayer', 'Unknown Taxpayer'),
     )
+    
+
     
     TAX_PERIOD_CHOICES = (
         ('Jan-2026', 'Jan-2026'),
@@ -67,22 +67,10 @@ class GSTReturn(models.Model):
         ('Oct-2026', 'Oct-2026'),
         ('Nov-2026', 'Nov-2026'),
         ('Dec-2026', 'Dec-2026'),
-        ('Jan-2027', 'Jan-2027'),
-        ('Feb-2027', 'Feb-2027'),
-        ('Mar-2027', 'Mar-2027'),
-        ('Apr-2027', 'Apr-2027'),
-        ('May-2027', 'May-2027'),
-        ('Jun-2027', 'Jun-2027'),
-        ('Jul-2027', 'Jul-2027'),
-        ('Aug-2027', 'Aug-2027'),
-        ('Sep-2027', 'Sep-2027'),
-        ('Oct-2027', 'Oct-2027'),
-        ('Nov-2027', 'Nov-2027'),
-        ('Dec-2027', 'Dec-2027'),
     )
     
     # Period Information
-    tax_period = models.CharField(max_length=20, choices=TAX_PERIOD_CHOICES, verbose_name='Tax Period')
+    tax_period = models.CharField(max_length=20, verbose_name='Tax Period')
     return_due_date = models.DateField(null=True, blank=True, verbose_name='Return Due Date')
     return_filing_date = models.DateField(null=True, blank=True, verbose_name='Return Filing Date')
     filing_delay_days = models.IntegerField(default=0, null=True, blank=True, verbose_name='Filing Delay (Days)')
