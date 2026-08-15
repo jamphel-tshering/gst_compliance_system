@@ -2,19 +2,18 @@ from django.db import models
 from taxpayers.models import TaxpayerMaster
 from returns.models import GSTReturn
 from core.models import User
-from core.models import User
 
 
 class ComplianceMonitoring(models.Model):
     """
-    Simple Compliance Monitoring Model - Tracks routine GST compliance
+    Compliance Monitoring Model - Tracks routine GST compliance
     """
     COMPLIANCE_STATUS_CHOICES = (
         ('Compliant', 'Compliant'),
         ('Late Filer', 'Late Filer'),
         ('Non-Filer', 'Non-Filer'),
         ('Payment Default', 'Payment Default'),
-        ('Other Non-Compliance', 'Other Non-Compliance'),
+        ( 'Other Non-Compliance', 'Other Non-Compliance'),
     )
     
     COMPLIANCE_FLAG_CHOICES = (
