@@ -22,8 +22,13 @@ def get_taxpayer_by_gstin(gstin):
 
 def calculate_tax_period_due_date(tax_period):
     """
-    Calculate due date for a given tax period (format: Jan-2026)
-    Due date is typically 20th of the following month
+    Calculate due date for a given tax period (format: Jan-2026) for Bhutan GST
+    Due date is 30 days after the end of the tax period
+    
+    Example: January 2026 GST return
+    - Tax period: 1-31 January 2026
+    - End of tax period: 31 January 2026
+    - Filing due date: 2 March 2026 (30 days after 31 January 2026)
     """
     try:
         # Parse Jan-2026 format
@@ -35,11 +40,33 @@ def calculate_tax_period_due_date(tax_period):
         month = month_map.get(month_abbr, 1)
         year = int(year)
         
-        # Due date is 20th of the following month
-        if month == 12:
-            due_date = datetime(year + 1, 1, 20)
-        else:
-            due_date = datetime(year, month + 1, 20)
+        # Get last day of each month
+        month_days = {
+            1: 31,  # January
+            2: 28,  # February (will be adjusted for leap years)
+            3: 31,  # March
+            4: 30,  # April
+            5: 31,  # May
+            6: 30,  # June
+            7: 31,  # July
+            8: 31,  # August
+            9: 30,  # September
+            10: 31, # October
+            11: 30, # November
+            12: 31  # December
+        }
+        
+        # Adjust February for leap years
+        if month == 2:
+            import calendar
+            month_days[2] = 29 if calendar.isleap(year) else 28
+        
+        # Get the last day of the tax period
+        last_day_of_period = month_days[month]
+        end_of_period = datetime(year, month, last_day_of_period)
+        
+        # Due date is 30 days after the end of the tax period
+        due_date = end_of_period + timedelta(days=30)
         
         return due_date
     except:

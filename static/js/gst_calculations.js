@@ -128,13 +128,28 @@ document.addEventListener('DOMContentLoaded', function() {
         if (gstPayableRefundable) gstPayableRefundable.value = payableRefundable.toFixed(2);
     }
     
-    // Function to calculate return due date based on tax period
+    // Function to calculate return due date based on tax period for Bhutan GST
     function calculateDueDate() {
         if (!taxPeriod?.value) return;
         
         const monthMap = {
             'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
             'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+        
+        const monthDays = {
+            0: 31,  // January
+            1: 28,  // February (will be adjusted for leap years)
+            2: 31,  // March
+            3: 30,  // April
+            4: 31,  // May
+            5: 30,  // June
+            6: 31,  // July
+            7: 31,  // August
+            8: 30,  // September
+            9: 31,  // October
+            10: 30, // November
+            11: 31  // December
         };
         
         const parts = taxPeriod.value.split('-');
@@ -146,13 +161,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (month === undefined) return;
         
-        // Due date is 20th of the following month
-        let dueDate;
-        if (month === 11) { // December
-            dueDate = new Date(year + 1, 0, 20);
-        } else {
-            dueDate = new Date(year, month + 1, 20);
+        // Adjust February for leap years
+        if (month === 1) {
+            const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+            monthDays[1] = isLeapYear ? 29 : 28;
         }
+        
+        // Get the last day of the tax period
+        const lastDayOfPeriod = monthDays[month];
+        const endOfPeriod = new Date(year, month, lastDayOfPeriod);
+        
+        // Due date is 30 days after the end of the tax period
+        const dueDate = new Date(endOfPeriod);
+        dueDate.setDate(dueDate.getDate() + 30);
         
         // Format as DD-MM-YYYY for display
         const day = String(dueDate.getDate()).padStart(2, '0');
