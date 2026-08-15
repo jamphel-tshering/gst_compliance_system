@@ -179,37 +179,67 @@ class GSTReturn(models.Model):
         
         # Auto-calculate filing_delay_days
         if self.return_due_date and self.return_filing_date:
+            from datetime import datetime
+            
+            # Convert date strings to date objects if needed
             due_date = self.return_due_date
             filing_date = self.return_filing_date
+            
+            if isinstance(due_date, str):
+                try:
+                    due_date = datetime.strptime(due_date, '%d-%m-%Y').date()
+                except ValueError:
+                    due_date = None
+            
+            if isinstance(filing_date, str):
+                try:
+                    filing_date = datetime.strptime(filing_date, '%d-%m-%Y').date()
+                except ValueError:
+                    filing_date = None
+            
             # Ensure both are date objects (not datetime)
-            if hasattr(due_date, 'date'):
+            if due_date and hasattr(due_date, 'date'):
                 due_date = due_date.date()
-            if hasattr(filing_date, 'date'):
+            if filing_date and hasattr(filing_date, 'date'):
                 filing_date = filing_date.date()
-            delay = (filing_date - due_date).days
-            self.filing_delay_days = max(0, delay)
+            
+            if due_date and filing_date:
+                delay = (filing_date - due_date).days
+                self.filing_delay_days = max(0, delay)
         
         # Auto-calculate filing_status
         if self.return_due_date:
+            from datetime import datetime
+            
             today = date.today()
             # Ensure return_due_date is a date object
             due_date = self.return_due_date
-            if hasattr(due_date, 'date'):
+            if isinstance(due_date, str):
+                try:
+                    due_date = datetime.strptime(due_date, '%d-%m-%Y').date()
+                except ValueError:
+                    due_date = None
+            elif hasattr(due_date, 'date'):
                 due_date = due_date.date()
             
             if not self.return_filing_date:
                 # No filing date
-                if today <= due_date:
+                if due_date and today <= due_date:
                     self.filing_status = 'Due'
                 else:
                     self.filing_status = 'Overdue / Non-Filer'
             else:
                 # Has filing date - ensure it's a date object
                 filing_date = self.return_filing_date
-                if hasattr(filing_date, 'date'):
+                if isinstance(filing_date, str):
+                    try:
+                        filing_date = datetime.strptime(filing_date, '%d-%m-%Y').date()
+                    except ValueError:
+                        filing_date = None
+                elif hasattr(filing_date, 'date'):
                     filing_date = filing_date.date()
                 
-                if filing_date <= due_date:
+                if filing_date and due_date and filing_date <= due_date:
                     self.filing_status = 'Filed On Time'
                 else:
                     self.filing_status = 'Late Filer'
