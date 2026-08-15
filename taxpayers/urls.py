@@ -8,5 +8,4 @@ router.register(r'licenses', MultipleLicenseReferenceViewSet, basename='license'
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('taxpayers/get_by_gstin/', TaxpayerMasterViewSet.as_view({'get': 'get_by_gstin'}), name='taxpayer-by-gstin'),
 ]
