@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse, FileResponse, JsonResponse
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 import csv
 import io
 from .models import ReportTemplate, GeneratedReport, ReportSchedule, DashboardWidget, AnalyticsData
@@ -26,6 +26,58 @@ class GeneratedReportAdmin(admin.ModelAdmin):
     readonly_fields = ['generated_at', 'file_size']
     actions = ['generate_taxpayer_csv_action', 'generate_taxpayer_excel_action', 'generate_returns_csv_action', 'generate_returns_excel_action', 'generate_compliance_csv_action', 'generate_compliance_excel_action']
     change_list_template = 'admin/generated_report_change_list.html'
+    
+    def changelist_view(self, request, extra_context=None):
+        """Override to add chart data to the context"""
+        extra_context = extra_context or {}
+        extra_context['chart_data'] = self.get_chart_data()
+        return super().changelist_view(request, extra_context=extra_context)
+    
+    def get_chart_data(self):
+        """Generate chart data for dashboard"""
+        import json
+        from taxpayers.models import TaxpayerMaster
+        from returns.models import GSTReturn
+        from compliance.models import ComplianceMonitoring
+        
+        # Taxpayer status distribution
+        taxpayer_status_data = {}
+        for status in ['Active', 'Inactive', 'Suspended', 'Cancelled', 'Deregistered']:
+            count = TaxpayerMaster.objects.filter(status=status, is_primary_license=True).count()
+            taxpayer_status_data[status] = count
+        
+        # Returns by tax period
+        returns_by_period = {}
+        for ret in GSTReturn.objects.all():
+            period = ret.tax_period
+            if period:
+                returns_by_period[period] = returns_by_period.get(period, 0) + 1
+        
+        # Compliance status distribution
+        compliance_status_data = {}
+        for status in ['Compliant', 'Non-Filer', 'Late Filer', 'Payment Default']:
+            count = ComplianceMonitoring.objects.filter(compliance_status=status).count()
+            compliance_status_data[status] = count
+        
+        # Monthly revenue trend (simulated based on declared sales)
+        monthly_revenue = {}
+        for ret in GSTReturn.objects.all():
+            if ret.tax_period and ret.declared_sales:
+                try:
+                    month, year = ret.tax_period.split('-')
+                    month_num = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+                                  'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}[month]
+                    key = f"{year}-{month_num}"
+                    monthly_revenue[key] = monthly_revenue.get(key, 0) + float(ret.declared_sales)
+                except:
+                    pass
+        
+        return json.dumps({
+            'taxpayer_status': taxpayer_status_data,
+            'returns_by_period': returns_by_period,
+            'compliance_status': compliance_status_data,
+            'monthly_revenue': monthly_revenue
+        })
     
     def get_urls(self):
         from django.urls import path

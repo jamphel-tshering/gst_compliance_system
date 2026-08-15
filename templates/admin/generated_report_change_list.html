@@ -35,11 +35,135 @@
 </li>
 {% endblock %}
 
+{% block content %}
+{{ block.super }}
+
+<div style="margin: 20px 0; padding: 20px; background: #f8f8f8; border-radius: 8px;">
+    <h2 style="margin-top: 0; color: #417690;">📊 Dashboard Analytics</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 20px;">
+        <!-- Taxpayer Status Chart -->
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0;">Taxpayer Status Distribution</h3>
+            <canvas id="taxpayerStatusChart"></canvas>
+        </div>
+        
+        <!-- Returns by Period Chart -->
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0;">Returns by Tax Period</h3>
+            <canvas id="returnsPeriodChart"></canvas>
+        </div>
+        
+        <!-- Compliance Status Chart -->
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0;">Compliance Status</h3>
+            <canvas id="complianceStatusChart"></canvas>
+        </div>
+        
+        <!-- Monthly Revenue Trend -->
+        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0;">Monthly Revenue Trend</h3>
+            <canvas id="revenueTrendChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 {% block extrahead %}
 {{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 function generateReport(reportType) {
     window.location.href = 'generate/' + reportType + '/';
+}
+
+// Chart data from Django
+const chartData = {{ chart_data|safe }};
+
+// Taxpayer Status Pie Chart
+if (Object.keys(chartData.taxpayer_status).length > 0) {
+    new Chart(document.getElementById('taxpayerStatusChart'), {
+        type: 'pie',
+        data: {
+            labels: Object.keys(chartData.taxpayer_status),
+            datasets: [{
+                data: Object.values(chartData.taxpayer_status),
+                backgroundColor: ['#417690', '#28a745', '#ffc107', '#dc3545', '#6c757d']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+// Returns by Period Bar Chart
+if (Object.keys(chartData.returns_by_period).length > 0) {
+    new Chart(document.getElementById('returnsPeriodChart'), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(chartData.returns_by_period),
+            datasets: [{
+                label: 'Number of Returns',
+                data: Object.values(chartData.returns_by_period),
+                backgroundColor: '#417690'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Compliance Status Doughnut Chart
+if (Object.keys(chartData.compliance_status).length > 0) {
+    new Chart(document.getElementById('complianceStatusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(chartData.compliance_status),
+            datasets: [{
+                data: Object.values(chartData.compliance_status),
+                backgroundColor: ['#28a745', '#dc3545', '#ffc107', '#fd7e14']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+// Monthly Revenue Line Chart
+if (Object.keys(chartData.monthly_revenue).length > 0) {
+    const sortedRevenue = Object.entries(chartData.monthly_revenue).sort();
+    new Chart(document.getElementById('revenueTrendChart'), {
+        type: 'line',
+        data: {
+            labels: sortedRevenue.map(item => item[0]),
+            datasets: [{
+                label: 'Revenue (Nu.)',
+                data: sortedRevenue.map(item => item[1]),
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
 }
 </script>
 {% endblock %}
