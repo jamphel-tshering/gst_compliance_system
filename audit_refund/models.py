@@ -36,7 +36,7 @@ class AuditCase(models.Model):
     # Case Information
     audit_case_id = models.CharField(max_length=20, unique=True, verbose_name='Audit Case ID')
     risk_referral = models.ForeignKey(ComplianceRiskReferral, on_delete=models.PROTECT, verbose_name='Risk Referral')
-    assessment_date = models.DateField(verbose_name='Assessment Date')
+    assessment_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Assessment Date')
     from_tax_period = models.CharField(max_length=20, verbose_name='From Tax Period')
     to_tax_period = models.CharField(max_length=20, verbose_name='To Tax Period')
     gstin = models.CharField(max_length=15, verbose_name='GSTIN')
@@ -50,12 +50,12 @@ class AuditCase(models.Model):
     # Assignment
     assigned_officer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_audit_cases', verbose_name='Assigned Officer')
     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_assignments', verbose_name='Assigned By')
-    assigned_date = models.DateField(null=True, blank=True, verbose_name='Assigned Date')
-    due_date = models.DateField(null=True, blank=True, verbose_name='Due Date')
+    assigned_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Assigned Date')
+    due_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Due Date')
     
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='referred', verbose_name='Status')
-    case_closed_date = models.DateField(null=True, blank=True, verbose_name='Case Closed Date')
+    case_closed_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Case Closed Date')
     assessment_duration = models.IntegerField(null=True, blank=True, verbose_name='Assessment Duration (Days)')
     
     # Original assessor from risk assessment
@@ -109,7 +109,7 @@ class AuditAssessment(models.Model):
     # Case Information
     audit_case = models.ForeignKey(AuditCase, on_delete=models.CASCADE, related_name='assessments', verbose_name='Audit Case')
     asc_no = models.CharField(max_length=20, unique=True, verbose_name='ASC No.')
-    assessment_date = models.DateField(verbose_name='Assessment Date')
+    assessment_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Assessment Date')
     tax_period = models.CharField(max_length=20, verbose_name='Tax Period')
     gstin = models.CharField(max_length=15, verbose_name='GSTIN')
     taxpayer_name = models.CharField(max_length=200, verbose_name='Taxpayer Name')
@@ -153,7 +153,7 @@ class AuditAssessment(models.Model):
     
     # Status
     status = models.CharField(max_length=20, blank=True, verbose_name='Status')
-    case_closed_date = models.DateField(null=True, blank=True, verbose_name='Case Closed Date')
+    case_closed_date = models.CharField(max_length=20, blank=True, null=True, verbose_name='Case Closed Date')
     assessment_duration = models.IntegerField(null=True, blank=True, verbose_name='Assessment Duration (Days)')
     
     # Assessor

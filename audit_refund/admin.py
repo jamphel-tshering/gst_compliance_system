@@ -5,25 +5,27 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.forms import DateInput, ModelChoiceField, CharField, ChoiceField
 from django import forms
+from datetime import datetime
 from .models import AuditCase, AuditAssessment, AuditFinding, RefundRegister
 from core.models import User
+from core.form_widgets import CustomDateInput, TaxPeriodSelect
+from taxpayers.models import TaxpayerMaster
 
 
-# Custom date input widget for dd-mm-yyyy format
-class CustomDateInput(DateInput):
-    input_type = 'date'
-    def __init__(self, attrs=None):
-        default_attrs = {'type': 'date'}
-        if attrs:
-            default_attrs.update(attrs)
-        super().__init__(attrs=default_attrs)
+
 
 
 # Custom form for AuditAssessment with tax period dropdown
 class AuditAssessmentForm(forms.ModelForm):
-    tax_period = forms.ChoiceField(
-        choices=[
-            ('', 'Select Tax Period'),
+    class Meta:
+        model = AuditAssessment
+        fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Set tax period choices
+        TAX_PERIOD_CHOICES = [
             ('Jan-2026', 'Jan-2026'),
             ('Feb-2026', 'Feb-2026'),
             ('Mar-2026', 'Mar-2026'),
@@ -36,58 +38,177 @@ class AuditAssessmentForm(forms.ModelForm):
             ('Oct-2026', 'Oct-2026'),
             ('Nov-2026', 'Nov-2026'),
             ('Dec-2026', 'Dec-2026'),
-        ],
-        required=True
-    )
+        ]
+        
+        if 'tax_period' in self.fields:
+            self.fields['tax_period'].widget = TaxPeriodSelect()
+            self.fields['tax_period'].required = True
+            self.fields['tax_period'].empty_label = None
+        
+        # Add date widgets with text input to avoid Django validation
+        date_fields = ['assessment_date', 'case_closed_date', 'assigned_date', 'due_date']
+        for field in date_fields:
+            if field in self.fields:
+                self.fields[field].widget = forms.TextInput(attrs={
+                    'type': 'text',
+                    'placeholder': 'DD-MM-YYYY',
+                    'pattern': r'\d{2}-\d{2}-\d{4}'
+                })
+        
+        # Filter officer dropdown to show only staff users
+        if 'assigned_officer' in self.fields:
+            self.fields['assigned_officer'].queryset = User.objects.filter(is_staff=True)
+            self.fields['assigned_officer'].required = False
+            self.fields['assigned_officer'].empty_label = "Select Officer"
+        
+        if 'assigned_by' in self.fields:
+            self.fields['assigned_by'].queryset = User.objects.filter(is_staff=True)
+            self.fields['assigned_by'].required = False
+            self.fields['assigned_by'].empty_label = "Select Assigner"
+        
+        if 'assessor' in self.fields:
+            self.fields['assessor'].queryset = User.objects.filter(is_staff=True)
+            self.fields['assessor'].required = False
+            self.fields['assessor'].empty_label = "Select Assessor"
     
-    class Meta:
-        model = AuditAssessment
-        fields = '__all__'
+    def clean_assessment_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('assessment_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
+    
+    def clean_case_closed_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('case_closed_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
+    
+    def clean_assigned_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('assigned_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
+    
+    def clean_due_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('due_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
 
 
 # Custom form for AuditCase with tax period dropdowns
 class AuditCaseForm(forms.ModelForm):
-    from_tax_period = forms.ChoiceField(
-        choices=[
-            ('', 'Select From Period'),
-            ('Jan-2026', 'Jan-2026'),
-            ('Feb-2026', 'Feb-2026'),
-            ('Mar-2026', 'Mar-2026'),
-            ('Apr-2026', 'Apr-2026'),
-            ('May-2026', 'May-2026'),
-            ('Jun-2026', 'Jun-2026'),
-            ('Jul-2026', 'Jul-2026'),
-            ('Aug-2026', 'Aug-2026'),
-            ('Sep-2026', 'Sep-2026'),
-            ('Oct-2026', 'Oct-2026'),
-            ('Nov-2026', 'Nov-2026'),
-            ('Dec-2026', 'Dec-2026'),
-        ],
-        required=True
-    )
-    
-    to_tax_period = forms.ChoiceField(
-        choices=[
-            ('', 'Select To Period'),
-            ('Jan-2026', 'Jan-2026'),
-            ('Feb-2026', 'Feb-2026'),
-            ('Mar-2026', 'Mar-2026'),
-            ('Apr-2026', 'Apr-2026'),
-            ('May-2026', 'May-2026'),
-            ('Jun-2026', 'Jun-2026'),
-            ('Jul-2026', 'Jul-2026'),
-            ('Aug-2026', 'Aug-2026'),
-            ('Sep-2026', 'Sep-2026'),
-            ('Oct-2026', 'Oct-2026'),
-            ('Nov-2026', 'Nov-2026'),
-            ('Dec-2026', 'Dec-2026'),
-        ],
-        required=True
-    )
-    
     class Meta:
         model = AuditCase
         fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Set tax period choices
+        TAX_PERIOD_CHOICES = [
+            ('Jan-2026', 'Jan-2026'),
+            ('Feb-2026', 'Feb-2026'),
+            ('Mar-2026', 'Mar-2026'),
+            ('Apr-2026', 'Apr-2026'),
+            ('May-2026', 'May-2026'),
+            ('Jun-2026', 'Jun-2026'),
+            ('Jul-2026', 'Jul-2026'),
+            ('Aug-2026', 'Aug-2026'),
+            ('Sep-2026', 'Sep-2026'),
+            ('Oct-2026', 'Oct-2026'),
+            ('Nov-2026', 'Nov-2026'),
+            ('Dec-2026', 'Dec-2026'),
+        ]
+        
+        period_fields = ['from_tax_period', 'to_tax_period']
+        for field in period_fields:
+            if field in self.fields:
+                self.fields[field].widget = TaxPeriodSelect()
+                self.fields[field].required = True
+                self.fields[field].empty_label = '---'
+        
+        # Add date widgets with text input to avoid Django validation
+        date_fields = ['assessment_date', 'case_closed_date', 'assigned_date', 'due_date']
+        for field in date_fields:
+            if field in self.fields:
+                self.fields[field].widget = forms.TextInput(attrs={
+                    'type': 'text',
+                    'placeholder': 'DD-MM-YYYY',
+                    'pattern': r'\d{2}-\d{2}-\d{4}'
+                })
+        
+        # Filter officer dropdown to show only staff users
+        if 'assigned_officer' in self.fields:
+            self.fields['assigned_officer'].queryset = User.objects.filter(is_staff=True)
+            self.fields['assigned_officer'].required = False
+            self.fields['assigned_officer'].empty_label = "Select Officer"
+        
+        if 'assigned_by' in self.fields:
+            self.fields['assigned_by'].queryset = User.objects.filter(is_staff=True)
+            self.fields['assigned_by'].required = False
+            self.fields['assigned_by'].empty_label = "Select Assigner"
+        
+        if 'assessor' in self.fields:
+            self.fields['assessor'].queryset = User.objects.filter(is_staff=True)
+            self.fields['assessor'].required = False
+            self.fields['assessor'].empty_label = "Select Assessor"
+    
+    def clean_assessment_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('assessment_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
+    
+    def clean_case_closed_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('case_closed_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
+    
+    def clean_assigned_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('assigned_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
+    
+    def clean_due_date(self):
+        """Validate DD-MM-YYYY format"""
+        date_str = self.cleaned_data.get('due_date')
+        if date_str:
+            try:
+                datetime.strptime(date_str, '%d-%m-%Y')
+            except ValueError:
+                raise forms.ValidationError('Enter a valid date in DD-MM-YYYY format (e.g., 15-08-2026)')
+        return date_str
 
 
 def get_display_value(obj, field_name):
@@ -164,10 +285,10 @@ def audit_refund_dashboard(request):
 class AuditCaseAdmin(admin.ModelAdmin):
     """Admin for Audit Cases"""
     form = AuditCaseForm
+    change_form_template = 'admin/audit_case_change_form.html'
     list_display = ['audit_case_id', 'risk_referral', 'gstin', 'taxpayer_name', 'assessment_type', 'assigned_officer', 'status', 'due_date']
     list_filter = ['status', 'assessment_type', 'audit_priority', 'assigned_officer', 'from_tax_period']
     search_fields = ['audit_case_id', 'gstin', 'taxpayer_name', 'risk_referral__risk_id', 'remarks', 'assigned_officer__username', 'assessor__username']
-    date_hierarchy = 'created_at'
     
     # Remove raw_id_fields to enable regular dropdown lookups
     # raw_id_fields = ['risk_referral', 'assigned_officer', 'assigned_by', 'assessor']
@@ -181,6 +302,28 @@ class AuditCaseAdmin(admin.ModelAdmin):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
             kwargs['widget'] = CustomDateInput()
         return super().formfield_for_dbfield(db_field, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        # Convert date strings to display format if needed
+        date_fields = ['assessment_date', 'case_closed_date', 'assigned_date', 'due_date']
+        for field in date_fields:
+            date_value = getattr(obj, field, None)
+            if date_value and isinstance(date_value, str):
+                try:
+                    datetime.strptime(date_value, '%d-%m-%Y')
+                except ValueError:
+                    pass  # Keep as is if conversion fails
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+                obj.dzongkhag = taxpayer.dzongkhag
+                obj.organisation_type = taxpayer.organisation_type
+                obj.frequency = taxpayer.frequency
+        
+        super().save_model(request, obj, form, change)
     
 
     
@@ -237,15 +380,64 @@ class AuditCaseAdmin(admin.ModelAdmin):
 class AuditAssessmentAdmin(admin.ModelAdmin):
     """Admin for Audit Assessments"""
     form = AuditAssessmentForm
+    change_form_template = 'admin/audit_assessment_change_form.html'
     list_display = ['asc_no', 'audit_case', 'gstin', 'taxpayer_name', 'assessment_type', 'assessment_outcome', 'status', 'assessor']
-    list_filter = ['assessment_type', 'assessment_outcome', 'status', 'assessment_date']
+    list_filter = ['assessment_type', 'assessment_outcome', 'status']
     search_fields = ['asc_no', 'gstin', 'taxpayer_name', 'audit_case__audit_case_id']
-    date_hierarchy = 'assessment_date'
     
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
             kwargs['widget'] = CustomDateInput()
         return super().formfield_for_dbfield(db_field, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        # Convert date strings to display format if needed
+        date_fields = ['assessment_date', 'case_closed_date']
+        for field in date_fields:
+            date_value = getattr(obj, field, None)
+            if date_value and isinstance(date_value, str):
+                try:
+                    datetime.strptime(date_value, '%d-%m-%Y')
+                except ValueError:
+                    pass  # Keep as is if conversion fails
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+                obj.dzongkhag = taxpayer.dzongkhag
+                obj.organisation_type = taxpayer.organisation_type
+                obj.frequency = taxpayer.frequency
+        
+        super().save_model(request, obj, form, change)
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
+            kwargs['widget'] = CustomDateInput()
+        return super().formfield_for_dbfield(db_field, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        # Convert date strings to display format if needed
+        date_fields = ['assessment_date', 'case_closed_date', 'assigned_date', 'due_date']
+        for field in date_fields:
+            date_value = getattr(obj, field, None)
+            if date_value and isinstance(date_value, str):
+                try:
+                    datetime.strptime(date_value, '%d-%m-%Y')
+                except ValueError:
+                    pass  # Keep as is if conversion fails
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+                obj.dzongkhag = taxpayer.dzongkhag
+                obj.organisation_type = taxpayer.organisation_type
+                obj.frequency = taxpayer.frequency
+        
+        super().save_model(request, obj, form, change)
     
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -271,6 +463,16 @@ class AuditAssessmentAdmin(admin.ModelAdmin):
         return form
     
     def save_model(self, request, obj, form, change):
+        # Convert date strings to display format if needed
+        date_fields = ['assessment_date', 'case_closed_date']
+        for field in date_fields:
+            date_value = getattr(obj, field, None)
+            if date_value and isinstance(date_value, str):
+                try:
+                    datetime.strptime(date_value, '%d-%m-%Y')
+                except ValueError:
+                    pass  # Keep as is if conversion fails
+        
         if not change:
             # Auto-populate from Audit Case when creating new assessment
             if obj.audit_case:
@@ -301,6 +503,15 @@ class AuditAssessmentAdmin(admin.ModelAdmin):
                 obj.asc_no = f"ASC-{timezone.now().year}-{last_num + 1:04d}"
             else:
                 obj.asc_no = f"ASC-{timezone.now().year}-0001"
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+                obj.dzongkhag = taxpayer.dzongkhag
+                obj.organisation_type = taxpayer.organisation_type
+                obj.frequency = taxpayer.frequency
         
         # Calculate variation if both values are present
         if obj.gst_payable_refundable_assessed and obj.gst_payable_refundable_return:
@@ -344,6 +555,7 @@ class AuditAssessmentAdmin(admin.ModelAdmin):
 @admin.register(AuditFinding)
 class AuditFindingAdmin(admin.ModelAdmin):
     """Admin for Audit Findings"""
+    change_form_template = 'admin/audit_finding_change_form.html'
     list_display = ['finding_id', 'audit_case', 'finding_type', 'amount_involved', 'action_taken']
     list_filter = ['finding_type', 'audit_case']
     search_fields = ['finding_id', 'audit_case__audit_case_id', 'discrepancy']
@@ -356,6 +568,11 @@ class AuditFindingAdmin(admin.ModelAdmin):
             'fields': ('finding_id', 'audit_case', 'reason_code', 'finding_type', 'discrepancy', 'amount_involved', 'description', 'action_taken', 'auditor_remarks')
         }),
     )
+    
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
+            kwargs['widget'] = CustomDateInput()
+        return super().formfield_for_dbfield(db_field, **kwargs)
     
     def save_model(self, request, obj, form, change):
         if not change:
@@ -386,6 +603,28 @@ class RefundRegisterAdmin(admin.ModelAdmin):
         if db_field.__class__.__name__ in ['DateField', 'DateTimeField']:
             kwargs['widget'] = CustomDateInput()
         return super().formfield_for_dbfield(db_field, **kwargs)
+    
+    def save_model(self, request, obj, form, change):
+        # Convert date strings to display format if needed
+        date_fields = ['assessment_date', 'case_closed_date', 'assigned_date', 'due_date']
+        for field in date_fields:
+            date_value = getattr(obj, field, None)
+            if date_value and isinstance(date_value, str):
+                try:
+                    datetime.strptime(date_value, '%d-%m-%Y')
+                except ValueError:
+                    pass  # Keep as is if conversion fails
+        
+        # Auto-fetch taxpayer information if GSTIN provided
+        if obj.gstin and not obj.taxpayer_name:
+            taxpayer = TaxpayerMaster.objects.filter(gstin=obj.gstin, is_primary_license=True).first()
+            if taxpayer:
+                obj.taxpayer_name = taxpayer.taxpayer_name
+                obj.dzongkhag = taxpayer.dzongkhag
+                obj.organisation_type = taxpayer.organisation_type
+                obj.frequency = taxpayer.frequency
+        
+        super().save_model(request, obj, form, change)
     
 
     
