@@ -40,6 +40,7 @@ class TaxPeriodFilter(SimpleListFilter):
 
 class GSTReturnForm(forms.ModelForm):
     """Custom form with tax period dropdown and auto-calculations"""
+    
     class Meta:
         model = GSTReturn
         fields = '__all__'
