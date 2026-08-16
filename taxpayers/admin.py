@@ -206,6 +206,49 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
     # Enhanced search to show all related records
     search_help_text = 'Search by GSTIN, Taxpayer Name, Business Name, CID/Company Reg No, or RAMIS TPN. All matching records will be shown.'
     
+    def changelist_view(self, request, extra_context=None):
+        """Override to add KPIs to the changelist view"""
+        from datetime import datetime, timedelta
+        
+        # Calculate KPIs
+        total_taxpayers = TaxpayerMaster.objects.filter(is_primary_license=True).count()
+        active_taxpayers = TaxpayerMaster.objects.filter(status='Active', is_primary_license=True).count()
+        inactive_taxpayers = TaxpayerMaster.objects.filter(status='Inactive', is_primary_license=True).count()
+        
+        # Calculate new registrations (last 30 days)
+        thirty_days_ago = datetime.now().date() - timedelta(days=30)
+        new_registrations = TaxpayerMaster.objects.filter(
+            is_primary_license=True,
+            registration_date__gte=thirty_days_ago
+        ).count()
+        
+        # Calculate by organization type
+        org_type_stats = {}
+        for org_type in ['Sole Proprietorship', 'Private Company', 'Public Company', 'Partnership', 'Government Entity']:
+            count = TaxpayerMaster.objects.filter(organisation_type=org_type, is_primary_license=True).count()
+            if count > 0:
+                org_type_stats[org_type] = count
+        
+        # Calculate by dzongkhag
+        dzongkhag_stats = {}
+        for dzongkhag in ['Mongar', 'Trashigang', 'Trashiyangtse', 'Lhuentse']:
+            count = TaxpayerMaster.objects.filter(dzongkhag=dzongkhag, is_primary_license=True).count()
+            if count > 0:
+                dzongkhag_stats[dzongkhag] = count
+        
+        # Add KPIs to context
+        extra_context = extra_context or {}
+        extra_context['kpi_data'] = {
+            'total_taxpayers': total_taxpayers,
+            'active_taxpayers': active_taxpayers,
+            'inactive_taxpayers': inactive_taxpayers,
+            'new_registrations': new_registrations,
+            'org_type_stats': org_type_stats,
+            'dzongkhag_stats': dzongkhag_stats,
+        }
+        
+        return super().changelist_view(request, extra_context=extra_context)
+    
     def get_search_results(self, request, queryset, search_term):
         """Override to ensure all related records are shown when searching"""
         queryset, use_distinct = super().get_search_results(request, queryset, search_term)
