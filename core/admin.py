@@ -52,7 +52,7 @@ def main_dashboard(request):
             'active': active_taxpayers,
             'inactive': inactive_taxpayers,
             'url': '/admin/taxpayers/taxpayermaster/',
-            'icon': ''
+            'icon': '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a237e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>'
         },
         'returns': {
             'total': total_returns,
@@ -60,14 +60,14 @@ def main_dashboard(request):
             'pending': pending_returns,
             'overdue': overdue_returns,
             'url': '/admin/returns/gstreturn/',
-            'icon': ''
+            'icon': '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a237e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>'
         },
         'compliance': {
             'total': total_compliance,
             'compliant': compliant_count,
             'non_compliant': non_compliant_count,
             'url': '/admin/compliance/compliancemonitoring/',
-            'icon': ''
+            'icon': '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a237e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
         },
         'risk': {
             'total': total_risk,
@@ -75,21 +75,21 @@ def main_dashboard(request):
             'medium': medium_risk,
             'low': low_risk,
             'url': '/compliance/compliance_risk_dashboard/',
-            'icon': ''
+            'icon': '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a237e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>'
         },
         'audit': {
             'total': total_audits,
             'open': open_audits,
             'completed': completed_audits,
             'url': '/admin/audit_refund/auditcase/',
-            'icon': ''
+            'icon': '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a237e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>'
         },
         'refund': {
             'total': total_refunds,
             'pending': pending_refunds,
             'approved': approved_refunds,
             'url': '/admin/audit_refund/refundregister/',
-            'icon': ''
+            'icon': '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#1a237e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>'
         },
     }
     
