@@ -206,6 +206,9 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
     # Enhanced search to show all related records
     search_help_text = 'Search by GSTIN, Taxpayer Name, Business Name, CID/Company Reg No, or RAMIS TPN. All matching records will be shown.'
     
+    # Use custom template for KPIs
+    change_list_template = 'taxpayers/taxpayer_change_list.html'
+    
     def changelist_view(self, request, extra_context=None):
         """Override to add KPIs to the changelist view"""
         from datetime import datetime, timedelta
