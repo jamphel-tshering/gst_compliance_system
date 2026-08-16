@@ -216,11 +216,14 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
         inactive_taxpayers = TaxpayerMaster.objects.filter(status='Inactive', is_primary_license=True).count()
         
         # Calculate new registrations (last 30 days)
-        thirty_days_ago = datetime.now().date() - timedelta(days=30)
-        new_registrations = TaxpayerMaster.objects.filter(
-            is_primary_license=True,
-            registration_date__gte=thirty_days_ago
-        ).count()
+        try:
+            thirty_days_ago = datetime.now().date() - timedelta(days=30)
+            new_registrations = TaxpayerMaster.objects.filter(
+                is_primary_license=True,
+                registration_date__gte=thirty_days_ago
+            ).count()
+        except:
+            new_registrations = 0
         
         # Calculate by organization type
         org_type_stats = {}
