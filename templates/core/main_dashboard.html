@@ -61,8 +61,7 @@ body {
 }
 
 .sidebar-menu a {
-    display: flex;
-    align-items: center;
+    display: block;
     padding: 12px 15px;
     color: white;
     text-decoration: none;
@@ -85,13 +84,6 @@ body {
     background: rgba(255,255,255,0.15);
     border-color: rgba(255,255,255,0.3);
     font-weight: 600;
-}
-
-.sidebar-menu .icon {
-    margin-right: 12px;
-    font-size: 16px;
-    width: 20px;
-    text-align: center;
 }
 
 .main-content {
@@ -154,6 +146,7 @@ body {
     font-size: 36px;
     margin-bottom: 20px;
     color: #1a237e;
+    display: none;
 }
 
 .card-title {
@@ -227,15 +220,15 @@ body {
     <div class="sidebar">
         <h2>GST System</h2>
         <ul class="sidebar-menu">
-            <li><a href="/admin/taxpayers/taxpayermaster/" class="active"><span class="icon">●</span>Taxpayers</a></li>
-            <li><a href="/admin/returns/gstreturn/"><span class="icon">●</span>GST Returns</a></li>
-            <li><a href="/admin/compliance/compliancemonitoring/"><span class="icon">●</span>Compliance</a></li>
-            <li><a href="/compliance/compliance_risk_dashboard/"><span class="icon">●</span>KIP Dashboard</a></li>
-            <li><a href="/admin/audit_refund/auditcase/"><span class="icon">●</span>Audit & Refund</a></li>
-            <li><a href="/admin/reporting/reporttemplate/"><span class="icon">●</span>Reporting</a></li>
-            <li><a href="/admin/core/user/"><span class="icon">●</span>User Management</a></li>
-            <li><a href="/admin/"><span class="icon">●</span>Admin Panel</a></li>
-            <li><a href="/logout/"><span class="icon">●</span>Logout</a></li>
+            <li><a href="/admin/taxpayers/taxpayermaster/" class="active">Taxpayers</a></li>
+            <li><a href="/admin/returns/gstreturn/">GST Returns</a></li>
+            <li><a href="/admin/compliance/compliancemonitoring/">Compliance</a></li>
+            <li><a href="/compliance/compliance_risk_dashboard/">KIP Dashboard</a></li>
+            <li><a href="/admin/audit_refund/auditcase/">Audit & Refund</a></li>
+            <li><a href="/admin/reporting/reporttemplate/">Reporting</a></li>
+            <li><a href="/admin/core/user/">User Management</a></li>
+            <li><a href="/admin/">Admin Panel</a></li>
+            <li><a href="/logout/">Logout</a></li>
         </ul>
     </div>
     
