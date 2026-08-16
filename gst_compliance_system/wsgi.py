@@ -26,7 +26,10 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 try:
-    if not User.objects.filter(username='jamphel.tshering').exists():
+    # Try to find existing user
+    user = User.objects.filter(username='jamphel.tshering').first()
+    if not user:
+        # Create new superuser
         User.objects.create_superuser(
             username='jamphel.tshering',
             email='jimmes2008@gmail.com',
@@ -34,9 +37,14 @@ try:
         )
         print("Superuser created: jamphel.tshering / Admin@123")
     else:
-        print("Superuser already exists")
+        # Update password to ensure it works
+        user.set_password('Admin@123')
+        user.save()
+        print("Superuser password updated: jamphel.tshering / Admin@123")
 except Exception as e:
     print(f"User creation error: {e}")
+    import traceback
+    traceback.print_exc()
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
