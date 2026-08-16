@@ -7,8 +7,8 @@
         <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #1a237e 0%, #283593 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; line-height: 1.2;">
             RRCO
         </div>
-        <h1 id="site-name" style="margin: 0; font-size: 24px; font-weight: bold; color: #1a237e;">
-            <a href="{% url 'admin:index' %}" style="color: #1a237e; text-decoration: none;">RRCO/GST Mongar Administration</a>
+        <h1 id="site-name" style="margin: 0; font-size: 22px; font-weight: bold; color: #1a237e;">
+            <a href="{% url 'admin:index' %}" style="color: #1a237e; text-decoration: none;">GST Administration</a>
         </h1>
     </div>
 </div>
@@ -16,6 +16,11 @@
 
 {% block extrastyle %}
 <style>
+/* Hide default branding */
+#branding h1 {
+    display: none !important;
+}
+
 /* Hide breadcrumbs */
 .breadcrumbs {
     display: none !important;

@@ -9,18 +9,16 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Ensure admin header is visible */
-#header {
-    position: relative;
-    z-index: 1001;
-    background: #fff;
-    margin-left: 220px;
-}
-
+/* Hide default dashboard content to avoid duplication */
 .dashboard-container {
     display: flex;
     min-height: 100vh;
     margin-top: 0;
+}
+
+/* Hide default admin header for dashboard */
+#header {
+    display: none !important;
 }
 
 .sidebar {
@@ -103,7 +101,7 @@ body {
     padding: 40px;
     background: #f8f9fa;
     min-height: 100vh;
-    margin-top: 0;
+    margin-top: 60px;
 }
 
 .main-content h1 {
@@ -234,6 +232,18 @@ body {
 {% endblock %}
 
 {% block content %}
+<!-- Custom header for dashboard -->
+<div style="position: fixed; top: 0; left: 220px; right: 0; height: 60px; background: #fff; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; padding: 0 20px;">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #1a237e 0%, #283593 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; line-height: 1.2;">
+            RRCO
+        </div>
+        <h1 style="margin: 0; font-size: 22px; font-weight: bold; color: #1a237e;">
+            GST Administration
+        </h1>
+    </div>
+</div>
+
 <div class="dashboard-container">
     <div class="sidebar">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.2);">
@@ -289,7 +299,7 @@ body {
         <div class="dashboard-cards">
             {% for module, stats in dashboard_stats.items %}
             <div class="dashboard-card" onclick="window.location.href='{{ stats.url }}'">
-                <div class="card-icon">{{ stats.icon }}</div>
+                <div class="card-icon">{{ stats.icon|safe }}</div>
                 <div class="card-title">{{ module|title }}</div>
                 <div class="card-stats">
                     {% if module == 'taxpayers' %}
