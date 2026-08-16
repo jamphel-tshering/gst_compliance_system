@@ -315,7 +315,7 @@ class SystemSettings(models.Model):
     System-wide configuration settings - simplified with specific fields
     """
     # General Settings
-    system_name = models.CharField(max_length=200, default='RRCO/GST Mongar Administration', verbose_name='System Name')
+    system_name = models.CharField(max_length=200, default='GST Administration', verbose_name='System Name')
     organization_name = models.CharField(max_length=200, default='Revenue and Customs Division', verbose_name='Organization Name')
     
     # Contact Information
