@@ -52,7 +52,7 @@ def main_dashboard(request):
             'active': active_taxpayers,
             'inactive': inactive_taxpayers,
             'url': '/admin/taxpayers/taxpayermaster/',
-            'icon': '👥'
+            'icon': ''
         },
         'returns': {
             'total': total_returns,
@@ -60,14 +60,14 @@ def main_dashboard(request):
             'pending': pending_returns,
             'overdue': overdue_returns,
             'url': '/admin/returns/gstreturn/',
-            'icon': '📋'
+            'icon': ''
         },
         'compliance': {
             'total': total_compliance,
             'compliant': compliant_count,
             'non_compliant': non_compliant_count,
             'url': '/admin/compliance/compliancemonitoring/',
-            'icon': '✅'
+            'icon': ''
         },
         'risk': {
             'total': total_risk,
@@ -75,21 +75,21 @@ def main_dashboard(request):
             'medium': medium_risk,
             'low': low_risk,
             'url': '/compliance/compliance_risk_dashboard/',
-            'icon': '🎯'
+            'icon': ''
         },
         'audit': {
             'total': total_audits,
             'open': open_audits,
             'completed': completed_audits,
             'url': '/admin/audit_refund/auditcase/',
-            'icon': '🔍'
+            'icon': ''
         },
         'refund': {
             'total': total_refunds,
             'pending': pending_refunds,
             'approved': approved_refunds,
             'url': '/admin/audit_refund/refundregister/',
-            'icon': '💵'
+            'icon': ''
         },
     }
     
