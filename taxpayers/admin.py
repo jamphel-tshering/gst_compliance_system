@@ -239,7 +239,7 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
             if count > 0:
                 dzongkhag_stats[dzongkhag] = count
         
-        # Add KPIs to context
+        # Add KPIs to context - always provide data
         extra_context = extra_context or {}
         extra_context['kpi_data'] = {
             'total_taxpayers': total_taxpayers,
@@ -249,6 +249,9 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
             'org_type_stats': org_type_stats,
             'dzongkhag_stats': dzongkhag_stats,
         }
+        
+        # Force kpi_data to be available in template
+        extra_context['kpi_data_available'] = True
         
         return super().changelist_view(request, extra_context=extra_context)
     
