@@ -89,7 +89,7 @@ def main_dashboard(request):
             'pending': pending_refunds,
             'approved': approved_refunds,
             'url': '/admin/audit_refund/refundregister/',
-            'icon': '�'
+            'icon': '💵'
         },
     }
     
