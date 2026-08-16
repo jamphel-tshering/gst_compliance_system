@@ -3,10 +3,8 @@
 {% block branding %}
 <div style="display: flex; align-items: center; justify-content: center; height: 60px; width: 100%; padding: 0 20px;">
     <div style="display: flex; align-items: center; gap: 15px;">
-        <!-- Official Logo Placeholder -->
-        <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #1a237e 0%, #283593 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; line-height: 1.2;">
-            RRCO
-        </div>
+        <!-- Official Logo -->
+        <img src="/static/images/logo.svg" alt="RRCO Logo" style="width: 45px; height: 45px; object-fit: contain;">
         <h1 id="site-name" style="margin: 0; font-size: 22px; font-weight: bold; color: #1a237e;">
             <a href="{% url 'admin:index' %}" style="color: #1a237e; text-decoration: none;">GST Administration</a>
         </h1>
@@ -30,19 +28,29 @@
 #header {
     position: relative;
     z-index: 1001;
-    background: #fff;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
     margin-left: 220px;
     padding: 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Keep user info and logout visible */
+/* Style user tools to be visible on dark background */
 #user-tools {
     display: block !important;
     position: absolute;
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
+}
+
+#user-tools a {
+    color: white !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+#user-tools a:hover {
+    text-decoration: underline;
 }
 </style>
 {% endblock %}

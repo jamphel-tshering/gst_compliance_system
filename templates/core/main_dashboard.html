@@ -101,7 +101,7 @@ body {
     padding: 40px;
     background: #f8f9fa;
     min-height: 100vh;
-    margin-top: 60px;
+    margin-top: 0;
 }
 
 .main-content h1 {
@@ -109,6 +109,7 @@ body {
     margin-bottom: 10px;
     font-size: 32px;
     font-weight: 700;
+    margin-top: 0;
 }
 
 .main-content p {
@@ -117,9 +118,23 @@ body {
     font-size: 16px;
 }
 
+/* Dashboard header links */
+.dashboard-header a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    transition: opacity 0.3s ease;
+}
+
+.dashboard-header a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
 .dashboard-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
     gap: 25px;
     margin-top: 30px;
 }
@@ -233,23 +248,27 @@ body {
 
 {% block content %}
 <!-- Custom header for dashboard -->
-<div style="position: fixed; top: 0; left: 220px; right: 0; height: 60px; background: #fff; z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; padding: 0 20px;">
+<div style="position: fixed; top: 0; left: 220px; right: 0; height: 60px; background: linear-gradient(135deg, #1a237e 0%, #283593 100%); z-index: 1001; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; padding: 0 20px;">
     <div style="display: flex; align-items: center; gap: 15px;">
-        <div style="width: 45px; height: 45px; background: linear-gradient(135deg, #1a237e 0%, #283593 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-align: center; line-height: 1.2;">
-            RRCO
-        </div>
-        <h1 style="margin: 0; font-size: 22px; font-weight: bold; color: #1a237e;">
+        <!-- Official Logo -->
+        <img src="/static/images/logo.svg" alt="RRCO Logo" style="width: 45px; height: 45px; object-fit: contain;">
+        <h1 style="margin: 0; font-size: 22px; font-weight: bold; color: white;">
             GST Administration
         </h1>
+    </div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <span style="color: white; font-size: 14px;">Welcome, {{ user.email }}</span>
+        <a href="/" style="color: white; text-decoration: none; font-size: 14px;">View site</a>
+        <a href="/admin/password_change/" style="color: white; text-decoration: none; font-size: 14px;">Change password</a>
+        <a href="/logout/" style="color: white; text-decoration: none; font-size: 14px;">Log out</a>
     </div>
 </div>
 
 <div class="dashboard-container">
     <div class="sidebar">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid rgba(255,255,255,0.2);">
-            <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11px; text-align: center; line-height: 1.2; flex-shrink: 0;">
-                RRCO
-            </div>
+            <!-- Official Logo -->
+            <img src="/static/images/logo.svg" alt="RRCO Logo" style="width: 40px; height: 40px; object-fit: contain;">
             <h2 style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: 0.5px;">GST System</h2>
         </div>
         <ul class="sidebar-menu">
@@ -293,6 +312,7 @@ body {
     </div>
     
     <div class="main-content">
+        <div style="height: 60px;"></div>
         <h1>{{ title }}</h1>
         <p>{{ subtitle }}</p>
         
