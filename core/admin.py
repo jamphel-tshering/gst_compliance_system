@@ -94,7 +94,7 @@ def main_dashboard(request):
     }
     
     context = {
-        'title': 'GST Administration',
+        'title': 'RRCO/GST Mongar Administration',
         'subtitle': 'Main Dashboard',
         'dashboard_stats': dashboard_stats,
     }

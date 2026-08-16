@@ -2,9 +2,24 @@
 
 {% block extrastyle %}
 <style>
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Ensure admin header is visible */
+#header {
+    position: relative;
+    z-index: 1001;
+    background: #fff;
+    margin-left: 200px;
+}
+
 .dashboard-container {
     display: flex;
     min-height: 100vh;
+    margin-top: 0;
 }
 
 .sidebar {
@@ -16,6 +31,8 @@
     position: fixed;
     left: 0;
     top: 0;
+    z-index: 1000;
+    overflow-y: auto;
 }
 
 .sidebar h2 {
@@ -70,11 +87,13 @@
     padding: 30px;
     background: #f5f5f5;
     min-height: 100vh;
+    margin-top: 0;
 }
 
 .main-content h1 {
     color: #1a237e;
     margin-bottom: 20px;
+    font-size: 28px;
 }
 
 .dashboard-cards {
