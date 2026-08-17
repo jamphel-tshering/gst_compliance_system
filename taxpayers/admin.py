@@ -343,7 +343,7 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
 
 @admin.register(MultipleLicenseReference)
 class MultipleLicenseAdmin(admin.ModelAdmin):
-    """Admin for Secondary Licenses - separate section for reference purposes"""
+    """Admin for Secondary Licenses - separate section for reference purposes - NO KPIs"""
     list_display = ['gstin', 'display_ramis_tpn', 'taxpayer_name', 'business_name', 'cid_company_reg_no', 'sector', 'sub_sector', 'business_activity', 'dzongkhag', 'status', 'display_registration_date', 'display_commencement_date', 'display_deregistration_date', 'email_address', 'mobile_number', 'display_business_address', 'remarks']
     list_display_links = ['gstin', 'taxpayer_name']
     list_filter = ['dzongkhag', 'status', 'registration_date']
@@ -352,6 +352,8 @@ class MultipleLicenseAdmin(admin.ModelAdmin):
     show_full_result_count = False  # Hide filter counts
     
     search_help_text = 'Search by GSTIN to see all related licenses for that taxpayer.'
+    
+    # NO custom change_list_template - Secondary licenses should not have KPIs
     
     def display_ramis_tpn(self, obj):
         """Display RAMIS TPN as the license number with proper heading"""
@@ -480,15 +482,61 @@ class TaxpayerEnquiryForm(forms.ModelForm):
 
 @admin.register(TaxpayerEnquiry)
 class TaxpayerEnquiryAdmin(admin.ModelAdmin):
-    """Admin for Taxpayer Enquiries - independent section"""
+    """Admin for Taxpayer Enquiries - independent section with enquiry-specific KPIs"""
     form = TaxpayerEnquiryForm
     change_form_template = 'taxpayers/taxpayer_enquiry_change_form.html'
+    change_list_template = 'taxpayers/enquiry_change_list.html'
     list_display = ['enquiry_id', 'display_enquiry_date', 'gstin', 'taxpayer_name', 'enquiry_type', 'subject', 'received_from_sent_to', 'action_response', 'status', 'assigned_to', 'remarks']
     list_display_links = ['enquiry_id', 'subject']
     list_filter = ['enquiry_type', 'status', 'mode', 'enquiry_date', 'assigned_to']
     search_fields = ['enquiry_id', 'subject', 'gstin', 'taxpayer_name', 'received_from_sent_to']
     list_per_page = 20  # Show 20 records per page with pagination
     date_hierarchy = 'enquiry_date'
+    
+    def changelist_view(self, request, extra_context=None):
+        """Override to add enquiry-specific KPIs to the changelist view"""
+        from datetime import datetime, timedelta
+        
+        # Calculate enquiry KPIs
+        total_enquiries = TaxpayerEnquiry.objects.count()
+        pending_enquiries = TaxpayerEnquiry.objects.filter(status='Pending').count()
+        resolved_enquiries = TaxpayerEnquiry.objects.filter(status='Resolved').count()
+        referred_enquiries = TaxpayerEnquiry.objects.filter(status='Referred').count()
+        
+        # Calculate by enquiry type
+        enquiry_type_stats = {}
+        for enquiry_type in ['Taxpayer Enquiry', 'General Correspondence', 'Notice', 'Assessment', 'Audit', 'Refund', 'ITC', 'Registration', 'Payment', 'Return Filing', 'Other']:
+            count = TaxpayerEnquiry.objects.filter(enquiry_type=enquiry_type).count()
+            if count > 0:
+                enquiry_type_stats[enquiry_type] = count
+        
+        # Calculate by status
+        status_stats = {}
+        for status in ['Pending Taxpayer', 'Pending Officer', 'Referred', 'Resolved', 'Closed']:
+            count = TaxpayerEnquiry.objects.filter(status=status).count()
+            if count > 0:
+                status_stats[status] = count
+        
+        # Calculate recent enquiries (last 30 days)
+        try:
+            thirty_days_ago = datetime.now().date() - timedelta(days=30)
+            recent_enquiries = TaxpayerEnquiry.objects.filter(enquiry_date__gte=thirty_days_ago).count()
+        except:
+            recent_enquiries = 0
+        
+        # Add KPIs to context
+        extra_context = extra_context or {}
+        extra_context['enquiry_kpi_data'] = {
+            'total_enquiries': total_enquiries,
+            'pending_enquiries': pending_enquiries,
+            'resolved_enquiries': resolved_enquiries,
+            'referred_enquiries': referred_enquiries,
+            'recent_enquiries': recent_enquiries,
+            'enquiry_type_stats': enquiry_type_stats,
+            'status_stats': status_stats,
+        }
+        
+        return super().changelist_view(request, extra_context=extra_context)
     
     fieldsets = (
         ('Enquiry Details', {
