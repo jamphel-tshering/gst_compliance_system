@@ -111,13 +111,20 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gst_compliance_system.wsgi.application'
 
 
-# Database
+# Database - Support both SQLite (local) and PostgreSQL (production)
+import os
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Use PostgreSQL if DATABASE_URL is set (Render)
+if 'DATABASE_URL' in os.environ:
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600, conn_health_checks=True)
 
 # Custom User Model
 AUTH_USER_MODEL = 'core.User'
