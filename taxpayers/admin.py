@@ -217,6 +217,9 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
         total_taxpayers = TaxpayerMaster.objects.filter(is_primary_license=True).count()
         active_taxpayers = TaxpayerMaster.objects.filter(status='Active', is_primary_license=True).count()
         inactive_taxpayers = TaxpayerMaster.objects.filter(status='Inactive', is_primary_license=True).count()
+        deregistered_taxpayers = TaxpayerMaster.objects.filter(status='Deregistered', is_primary_license=True).count()
+        cancelled_taxpayers = TaxpayerMaster.objects.filter(status='Cancelled', is_primary_license=True).count()
+        suspended_taxpayers = TaxpayerMaster.objects.filter(status='Suspended', is_primary_license=True).count()
         
         # Calculate new registrations (last 30 days)
         try:
@@ -235,6 +238,13 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
             if count > 0:
                 org_type_stats[org_type] = count
         
+        # Calculate by frequency
+        frequency_stats = {}
+        for frequency in ['Monthly', 'Quarterly', 'Half Yearly']:
+            count = TaxpayerMaster.objects.filter(frequency=frequency, is_primary_license=True).count()
+            if count > 0:
+                frequency_stats[frequency] = count
+        
         # Calculate by dzongkhag
         dzongkhag_stats = {}
         for dzongkhag in ['Mongar', 'Trashigang', 'Trashiyangtse', 'Lhuentse']:
@@ -248,8 +258,12 @@ class TaxpayerMasterAdmin(ImportExportModelAdmin):
             'total_taxpayers': total_taxpayers,
             'active_taxpayers': active_taxpayers,
             'inactive_taxpayers': inactive_taxpayers,
+            'deregistered_taxpayers': deregistered_taxpayers,
+            'cancelled_taxpayers': cancelled_taxpayers,
+            'suspended_taxpayers': suspended_taxpayers,
             'new_registrations': new_registrations,
             'org_type_stats': org_type_stats,
+            'frequency_stats': frequency_stats,
             'dzongkhag_stats': dzongkhag_stats,
         }
         
