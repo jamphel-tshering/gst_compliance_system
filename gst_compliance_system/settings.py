@@ -122,9 +122,13 @@ DATABASES = {
 }
 
 # Use PostgreSQL if DATABASE_URL is set (Render)
-if 'DATABASE_URL' in os.environ:
+# This MUST come before any database operations
+if os.environ.get('DATABASE_URL'):
     import dj_database_url
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, conn_health_checks=True)
+    print("Using PostgreSQL database from DATABASE_URL")
+else:
+    print("Using SQLite database for local development")
 
 # Custom User Model
 AUTH_USER_MODEL = 'core.User'
