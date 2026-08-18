@@ -41,12 +41,14 @@
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 1003;
 }
 
 #user-tools a {
     color: white !important;
     text-decoration: none;
     font-weight: 500;
+    margin-left: 10px;
 }
 
 #user-tools a:hover {
@@ -56,25 +58,29 @@
 /* Backup/Restore buttons */
 .backup-restore-buttons {
     position: absolute;
-    right: 200px;
+    right: 300px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     gap: 10px;
+    z-index: 1002;
 }
 
 .backup-restore-buttons a {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
     color: white !important;
-    padding: 5px 15px;
+    padding: 6px 12px;
     border-radius: 4px;
     text-decoration: none;
-    font-size: 13px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    font-weight: 500;
+    display: inline-block;
+    white-space: nowrap;
 }
 
 .backup-restore-buttons a:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.35);
     text-decoration: none;
 }
 </style>
