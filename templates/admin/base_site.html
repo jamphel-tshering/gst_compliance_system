@@ -55,41 +55,51 @@
     text-decoration: underline;
 }
 
-/* Backup/Restore buttons */
-.backup-restore-buttons {
-    position: absolute;
-    left: 300px;
-    top: 50%;
-    transform: translateY(-50%);
+/* Fixed backup/restore buttons at bottom */
+.backup-restore-bar {
+    position: fixed;
+    bottom: 0;
+    left: 220px;
+    right: 0;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+    padding: 15px 20px;
     display: flex;
-    gap: 10px;
-    z-index: 1002;
+    justify-content: center;
+    gap: 15px;
+    z-index: 9999;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
 }
 
-.backup-restore-buttons a {
+.backup-restore-bar a {
     background: rgba(255, 255, 255, 0.25);
     color: white !important;
-    padding: 6px 12px;
-    border-radius: 4px;
+    padding: 8px 20px;
+    border-radius: 6px;
     text-decoration: none;
-    font-size: 12px;
+    font-size: 14px;
     border: 1px solid rgba(255, 255, 255, 0.4);
     font-weight: 500;
     display: inline-block;
     white-space: nowrap;
+    transition: all 0.3s ease;
 }
 
-.backup-restore-buttons a:hover {
+.backup-restore-bar a:hover {
     background: rgba(255, 255, 255, 0.35);
     text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* Add bottom padding to main content to avoid overlap with fixed bar */
+#content {
+    padding-bottom: 80px;
 }
 </style>
 {% endblock %}
 
-{% block userlinks %}
-<div class="backup-restore-buttons">
-    <a href="/backup-database/">📥 Backup</a>
-    <a href="/restore-database/">📤 Restore</a>
+{% block footer %}
+<div class="backup-restore-bar">
+    <a href="/backup-database/">📥 Backup Database</a>
+    <a href="/restore-database/">📤 Restore Database</a>
 </div>
-{{ block.super }}
 {% endblock %}
