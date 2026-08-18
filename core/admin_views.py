@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Count, Sum, Avg
 from taxpayers.models import TaxpayerMaster
 from returns.models import GSTReturn
@@ -8,6 +8,10 @@ from compliance.models import ComplianceRiskReferral, EnforcementRecovery
 from django.utils import timezone
 from datetime import timedelta
 import json
+import os
+from django.conf import settings
+from django.core.management import call_command
+from django.contrib import messages
 
 
 @staff_member_required
@@ -354,3 +358,55 @@ def jazzmin_dashboard(request):
     }
     
     return render(request, 'jazzmin/index.html', context)
+
+
+@staff_member_required
+def backup_database(request):
+    """Create a backup of the SQLite database"""
+    if request.method == 'POST':
+        try:
+            call_command('backup_db')
+            messages.success(request, 'Database backup created successfully!')
+        except Exception as e:
+            messages.error(request, f'Backup failed: {str(e)}')
+        return redirect('admin:index')
+    
+    # List existing backups
+    backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+    backups = []
+    if os.path.exists(backup_dir):
+        backups = sorted([f for f in os.listdir(backup_dir) if f.startswith('gst_compliance_backup_')], reverse=True)
+    
+    context = {
+        'backups': backups,
+        'backup_count': len(backups)
+    }
+    return render(request, 'admin/backup_database.html', context)
+
+
+@staff_member_required
+def restore_database(request):
+    """Restore database from a backup"""
+    if request.method == 'POST':
+        backup_file = request.POST.get('backup_file')
+        if backup_file:
+            try:
+                call_command('restore_db', backup_file)
+                messages.success(request, f'Database restored from {backup_file} successfully!')
+                return redirect('admin:index')
+            except Exception as e:
+                messages.error(request, f'Restore failed: {str(e)}')
+        else:
+            messages.error(request, 'Please select a backup file to restore')
+    
+    # List existing backups
+    backup_dir = os.path.join(settings.BASE_DIR, 'backups')
+    backups = []
+    if os.path.exists(backup_dir):
+        backups = sorted([f for f in os.listdir(backup_dir) if f.startswith('gst_compliance_backup_')], reverse=True)
+    
+    context = {
+        'backups': backups,
+        'backup_count': len(backups)
+    }
+    return render(request, 'admin/restore_database.html', context)

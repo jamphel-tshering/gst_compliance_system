@@ -52,5 +52,38 @@
 #user-tools a:hover {
     text-decoration: underline;
 }
+
+/* Backup/Restore buttons */
+.backup-restore-buttons {
+    position: absolute;
+    right: 200px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.backup-restore-buttons a {
+    background: rgba(255, 255, 255, 0.2);
+    color: white !important;
+    padding: 5px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.backup-restore-buttons a:hover {
+    background: rgba(255, 255, 255, 0.3);
+    text-decoration: none;
+}
 </style>
+{% endblock %}
+
+{% block userlinks %}
+<div class="backup-restore-buttons">
+    <a href="/backup-database/">📥 Backup</a>
+    <a href="/restore-database/">📤 Restore</a>
+</div>
+{{ block.super }}
 {% endblock %}

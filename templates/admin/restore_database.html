@@ -1,0 +1,67 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Restore Database</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">⚠️ Warning</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <strong>Restoring a database will overwrite all current data!</strong>
+                        Make sure you have a backup of the current database before restoring.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Select Backup to Restore</h5>
+                </div>
+                <div class="card-body">
+                    {% if backups %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="backup_file" class="form-label">Choose Backup File:</label>
+                                <select class="form-select" id="backup_file" name="backup_file" required>
+                                    <option value="">-- Select a backup --</option>
+                                    {% for backup in backups %}
+                                    <option value="{{ backup }}">{{ backup }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-upload"></i> Restore Database
+                            </button>
+                            <a href="/admin/" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </form>
+                    {% else %}
+                        <p class="text-muted">No backups found. <a href="/backup-database/">Create a backup first</a>.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Backup Instructions</h5>
+                </div>
+                <div class="card-body">
+                    <ol>
+                        <li>Before manual deploy: <a href="/backup-database/">Create a backup</a></li>
+                        <li>Do manual deploy on Render</li>
+                        <li>After deploy: <strong>Restore from backup</strong> (this page)</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

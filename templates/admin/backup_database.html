@@ -1,0 +1,66 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Database Backup</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Create New Backup</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        Create a backup of the SQLite database before deploying manually. 
+                        This will save all your data to a backup file.
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-download"></i> Create Backup
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Existing Backups ({{ backup_count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if backups %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Backup File</th>
+                                        <th>Size</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for backup in backups %}
+                                    <tr>
+                                        <td>{{ backup }}</td>
+                                        <td>-</td>
+                                        <td>
+                                            <a href="/restore-database/" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-upload"></i> Restore
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No backups found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
