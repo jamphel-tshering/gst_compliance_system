@@ -111,38 +111,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gst_compliance_system.wsgi.application'
 
 
-# Database - Support both SQLite (local) and PostgreSQL (production)
-import os
-import urllib.parse
-
+# Database - SQLite for now (will migrate to PostgreSQL later)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# Use PostgreSQL if DATABASE_URL is set (Render)
-# This MUST come before any database operations
-database_url = os.environ.get('DATABASE_URL')
-print(f"DEBUG: DATABASE_URL environment variable exists: {bool(database_url)}")
-
-if database_url:
-    # Parse the DATABASE_URL manually
-    parsed = urllib.parse.urlparse(database_url)
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': parsed.path[1:],  # Remove leading slash
-        'USER': parsed.username,
-        'PASSWORD': parsed.password,
-        'HOST': parsed.hostname,
-        'PORT': parsed.port or 5432,
-        'CONN_MAX_AGE': 600,
-        'CONN_HEALTH_CHECKS': True,
-    }
-    print(f"Using PostgreSQL: {parsed.hostname}/{parsed.path[1:]}")
-else:
-    print("Using SQLite database for local development")
 
 # Custom User Model
 AUTH_USER_MODEL = 'core.User'
