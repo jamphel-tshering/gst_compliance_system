@@ -123,7 +123,10 @@ DATABASES = {
 
 # Use PostgreSQL if DATABASE_URL is set (Render)
 # This MUST come before any database operations
-if os.environ.get('DATABASE_URL'):
+database_url = os.environ.get('DATABASE_URL')
+print(f"DEBUG: DATABASE_URL = {database_url[:20] if database_url else 'None'}...")
+
+if database_url:
     import dj_database_url
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, conn_health_checks=True)
     print("Using PostgreSQL database from DATABASE_URL")
